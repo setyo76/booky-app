@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    @apply bg-white text-neutral-900 font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .book-card {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  .badge-borrowed {
+    @apply bg-blue-50 text-blue-600 border border-blue-200;
+  }
+
+  .badge-returned {
+    @apply bg-green-50 text-green-600 border border-green-200;
+  }
+
+  .badge-overdue {
+    @apply bg-red-50 text-red-600 border border-red-200;
+  }
+
+  .star-filled {
+    @apply text-yellow-400 fill-yellow-400;
+  }
+
+  .star-empty {
+    @apply text-neutral-300;
+  }
+
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-neutral-900;
+  }
+}
