@@ -376,3 +376,4 @@ export function useAuthorDetail(authorId: number) {
     enabled: !!authorId && authorId > 0,
   });
 }
+

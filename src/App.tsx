@@ -11,6 +11,7 @@ import BookDetailPage from "./pages/BookDetailPage/page";
 import { ROUTES } from "./constants";
 import BookListPage from "./pages/BookListPage/page";
 import AuthorDetailPage from "./pages/AuthorDetailPage/page";
+import MyLoansPage from "./pages/MyLoansPage/page";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +41,8 @@ function App() {
         <Route path="/books/list" element={<BookListPage />} />
 
         <Route path="/authors/:id" element={<AuthorDetailPage />} />
+
+        <Route path="/my-loans" element={<MyLoansPage />} />
       </Routes>
     </BrowserRouter>
   );
