@@ -13,6 +13,9 @@ import AuthorDetailPage from "./pages/AuthorDetailPage/page";
 import MyLoansPage from "./pages/MyLoansPage/page";
 import ProfilePage from "./pages/ProfilePage/page";
 import { ROUTES } from "./constants";
+import CartPage from "./pages/CartPage/page";
+import CheckoutPage from "@/pages/CheckoutPage/page";
+import SuccessPage from "@/pages/SuccessPage/page";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,6 +44,12 @@ function App() {
       {/* Redirects */}
       <Route path="/" element={<Navigate to={ROUTES.BOOKS} replace />} />
       <Route path="*" element={<Navigate to={ROUTES.BOOKS} replace />} />
+      <Route path={ROUTES.CART} element={<CartPage />} />
+
+      <Route path="/checkout" element={<CheckoutPage />} />
+      <Route path="/checkout/success" element={<SuccessPage />} />
+
+      
     </Routes>
   );
 }

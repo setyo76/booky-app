@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
@@ -10,24 +10,28 @@ import RelatedBooks from "./components/RelatedBooks";
 import { SkeletonCard } from "@/components/shared/LoadingSpinner";
 import { ErrorState } from "@/components/shared/StateViews";
 
-import { useBookDetail, useBorrowBook } from "@/hooks";
+import { useBookDetail, useBorrowBook, useAddToCart, useRemoveFromCart, useCart } from "@/hooks";
 import { selectIsAuthenticated } from "@/store/authSlice";
-import { selectIsInCart, addItem, removeItem } from "@/store/cartSlice";
-import { ROUTES, TOAST_MESSAGES } from "@/constants";
+import { ROUTES } from "@/constants";
 
 export default function BookDetailPage() {
   const { id } = useParams<{ id: string }>();
   const bookId = Number(id);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const isInCart = useSelector(selectIsInCart(bookId));
 
   const { data, isLoading, isError, refetch } = useBookDetail(bookId);
   const book = data?.data;
 
+  // ✅ Cek isInCart dari server cart (bukan Redux)
+  const { data: cartData } = useCart();
+  const cartItems = cartData?.data?.items ?? [];
+  const isInCart = cartItems.some((item) => item.bookId === bookId);
+
   const { mutate: borrowBook, isPending: isBorrowing } = useBorrowBook();
+  const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
+  const { mutate: removeFromCart, isPending: isRemovingFromCart } = useRemoveFromCart();
 
   function handleBorrow() {
     if (!isAuthenticated) {
@@ -35,20 +39,22 @@ export default function BookDetailPage() {
       navigate(ROUTES.LOGIN);
       return;
     }
-    borrowBook(bookId, {
-      onSuccess: () => toast.success(TOAST_MESSAGES.BORROW_SUCCESS),
-      onError: () => toast.error(TOAST_MESSAGES.BORROW_ERROR),
-    });
+    borrowBook(bookId);
   }
 
   function handleCartToggle() {
-    if (!book) return;
+    if (!isAuthenticated) {
+      toast.error("Silakan login untuk menambahkan ke keranjang.");
+      navigate(ROUTES.LOGIN);
+      return;
+    }
+
     if (isInCart) {
-      dispatch(removeItem(bookId));
-      toast.success(TOAST_MESSAGES.CART_REMOVED);
+      // Cari itemId dari server cart untuk di-remove
+      const cartItem = cartItems.find((item) => item.bookId === bookId);
+      if (cartItem) removeFromCart(cartItem.id);
     } else {
-      dispatch(addItem(book));
-      toast.success(TOAST_MESSAGES.CART_ADDED);
+      addToCart(bookId);
     }
   }
 
@@ -102,37 +108,32 @@ export default function BookDetailPage() {
         {/* Content */}
         {!isLoading && !isError && book && (
           <>
-            {/* Book info + actions */}
             <BookInfo
               book={book}
               onBorrow={handleBorrow}
               onAddToCart={handleCartToggle}
               isBorrowing={isBorrowing}
               isInCart={isInCart}
+              isCartLoading={isAddingToCart || isRemovingFromCart}
               isAuthenticated={isAuthenticated}
             />
 
-            {/* Divider */}
             <div className="h-px bg-neutral-200" />
 
-            {/* Reviews */}
             <ReviewSection
               bookId={bookId}
               rating={book.rating}
               reviewCount={book.reviewCount}
             />
 
-            {/* Divider */}
             <div className="h-px bg-neutral-200" />
 
-            {/* Related books */}
             <RelatedBooks
               categoryId={book.category?.id}
               currentBookId={bookId}
             />
           </>
         )}
-
       </div>
     </MainLayout>
   );

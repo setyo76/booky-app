@@ -6,7 +6,7 @@ import {
   BorrowBookRequest,
 } from "../types";
 
-// POST /api/loans — borrow a book (user)
+// POST /api/loans — borrow a single book (user)
 export async function borrowBook(
   data: BorrowBookRequest
 ): Promise<ApiResponse<{ loan: Loan }>> {
@@ -17,29 +17,42 @@ export async function borrowBook(
   return response.data;
 }
 
-// PATCH /api/loans/:id/returns — return a book (borrower)
-export async function returnBook(
-  loanId: number
-): Promise<ApiResponse<{ loan: Loan }>> {
-  const response = await axiosClient.patch<ApiResponse<{ loan: Loan }>>(
-    `/loans/${loanId}/returns`
+// POST /api/loans/from-cart — checkout dari cart (bulk borrow)
+export async function borrowFromCart(data: {
+  itemIds: number[];
+  borrowDate: string;   // "YYYY-MM-DD"
+  duration: 3 | 5 | 10;
+}): Promise<ApiResponse<{ loans: Loan[] }>> {
+  const response = await axiosClient.post<ApiResponse<{ loans: Loan[] }>>(
+    "/loans/from-cart",
+    data
   );
   return response.data;
 }
 
-// GET /api/me/loans — my loan history
+// PATCH /api/loans/:id/return — return a book (borrower)
+export async function returnBook(
+  loanId: number
+): Promise<ApiResponse<{ loan: Loan }>> {
+  const response = await axiosClient.patch<ApiResponse<{ loan: Loan }>>(
+    `/loans/${loanId}/return`
+  );
+  return response.data;
+}
+
+// GET /api/loans/my — my loan history
 export async function getMyLoans(params?: {
   status?: string;
   page?: number;
   limit?: number;
 }): Promise<LoansResponse> {
-  const response = await axiosClient.get<LoansResponse>("/me/loans", {
+  const response = await axiosClient.get<LoansResponse>("/loans/my", {
     params,
   });
   return response.data;
 }
 
-// GET /api/admin/loans — all loans (admin) with pagination + filter
+// GET /api/admin/loans — all loans (admin)
 export async function getAdminLoans(params?: {
   status?: string;
   search?: string;
@@ -73,24 +86,12 @@ export async function createAdminLoan(data: {
   return response.data;
 }
 
-// PATCH /api/loans/:id/confirm-borrow — confirm borrow (admin)
-export async function confirmBorrow(
-  loanId: number,
-  data?: { actualCopies?: number; borrowDate?: string; dueDate?: string }
-): Promise<ApiResponse<{ loan: Loan }>> {
-  const response = await axiosClient.patch<ApiResponse<{ loan: Loan }>>(
-    `/loans/${loanId}/confirm-borrow`,
-    data
-  );
-  return response.data;
-}
-
-// PUT /api/admin/loans/:id — update loan (admin)
+// PATCH /api/admin/loans/:id — update loan (admin)
 export async function updateAdminLoan(
   loanId: number,
   data: Partial<Loan>
 ): Promise<ApiResponse<{ loan: Loan }>> {
-  const response = await axiosClient.put<ApiResponse<{ loan: Loan }>>(
+  const response = await axiosClient.patch<ApiResponse<{ loan: Loan }>>(
     `/admin/loans/${loanId}`,
     data
   );

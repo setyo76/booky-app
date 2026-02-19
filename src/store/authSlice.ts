@@ -92,3 +92,5 @@ export const selectUser = (state: { auth: AuthState }) => state.auth.user;
 export const selectIsAuthenticated = (state: { auth: AuthState }) =>
   state.auth.isAuthenticated;
 export const selectIsAdmin = (state: { auth: AuthState }) => state.auth.isAdmin;
+// Tambahkan ini di authSlice.ts
+export const selectCurrentUser = (state: RootState) => state.auth.user;

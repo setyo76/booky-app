@@ -4,7 +4,6 @@ import {
   useQueryClient,
   UseQueryOptions,
 } from "@tanstack/react-query";
-import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
 import { QUERY_KEYS, PAGINATION, TOAST_MESSAGES } from "../constants";
@@ -14,6 +13,7 @@ import * as otherApis from "../api/otherApis";
 import { BooksQueryParams, RecommendedBooksParams, Book } from "../types";
 import { getErrorMessage } from "../api/axiosClient";
 import { getProfile, updateProfile, getMyLoans, getMyReviews } from "../api/meApi";
+import * as cartApi from "../api/cartApi";
 
 // ============================================================
 // BOOKS HOOKS
@@ -302,35 +302,10 @@ export function useMyProfile() {
 // CART HOOKS
 // ============================================================
 
-export function useCart() {
-  return useQuery({
-    queryKey: [QUERY_KEYS.CART],
-    queryFn: otherApis.getCart,
-    staleTime: 1000 * 60,
-  });
-}
-
-export function useCheckoutCart() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: otherApis.checkoutCart,
-    onSuccess: () => {
-      toast.success(TOAST_MESSAGES.CART_CHECKOUT_SUCCESS);
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LOANS_MY] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOOKS] });
-    },
-    onError: (error) => {
-      toast.error(getErrorMessage(error) || TOAST_MESSAGES.CART_CHECKOUT_ERROR);
-    },
-  });
-}
-
 export function useAuthorDetail(authorId: number) {
   return useQuery({
     queryKey: ["author-detail", authorId],
-    queryFn: () => getAuthorDetail(authorId),
+    queryFn: () => otherApis.getAuthorDetail(authorId), // sesuaikan nama fungsinya
     enabled: !!authorId && authorId > 0,
   });
 }
@@ -365,5 +340,87 @@ export function useMyReviews(params?: { page?: number; limit?: number }) {
   return useQuery({
     queryKey: [QUERY_KEYS.REVIEWS_MY, params],
     queryFn: () => getMyReviews(params),
+  });
+}
+
+// ── Cart Hooks ───────────────────────────────────────────────
+
+export function useCart() {
+  return useQuery({
+    queryKey: [QUERY_KEYS.CART],
+    queryFn: cartApi.getCart,
+    staleTime: 1000 * 60,
+  });
+}
+
+// GET /api/cart/checkout — user info + book list
+export function useCartCheckout() {
+  return useQuery({
+    queryKey: [QUERY_KEYS.CART, "checkout"],
+    queryFn: cartApi.getCartCheckout,
+    staleTime: 0, // selalu fresh
+  });
+}
+
+// POST /api/cart/items — tambah buku ke server cart
+export function useAddToCart() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (bookId: number) => cartApi.addToCart(bookId),
+    onSuccess: () => {
+      toast.success(TOAST_MESSAGES.CART_ADDED);
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error) || "Gagal menambahkan ke keranjang.");
+    },
+  });
+}
+
+// DELETE /api/cart/items/:itemId
+export function useRemoveFromCart() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (itemId: number) => cartApi.removeFromCart(itemId),
+    onSuccess: () => {
+      toast.success(TOAST_MESSAGES.CART_REMOVED);
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error) || "Gagal menghapus dari keranjang.");
+    },
+  });
+}
+
+// DELETE /api/cart — clear semua
+export function useClearCart() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: cartApi.clearCart,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
+    },
+  });
+}
+
+// ── Borrow From Cart ─────────────────────────────────────────
+
+// POST /api/loans/from-cart — checkout bulk dari cart
+export function useBorrowFromCart() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      itemIds: number[];
+      borrowDate: string;
+      duration: 3 | 5 | 10;
+    }) => loansApi.borrowFromCart(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LOANS_MY] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOOKS] });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error) || TOAST_MESSAGES.BORROW_ERROR);
+    },
   });
 }
