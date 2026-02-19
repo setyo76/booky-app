@@ -7,11 +7,12 @@ import { store } from "./store";
 import LoginPage from "./pages/LoginPage/page";
 import RegisterPage from "./pages/RegisterPage/page";
 import HomePage from "./pages/HomePage/page";
-import BookDetailPage from "./pages/BookDetailPage/page";
-import { ROUTES } from "./constants";
 import BookListPage from "./pages/BookListPage/page";
+import BookDetailPage from "./pages/BookDetailPage/page";
 import AuthorDetailPage from "./pages/AuthorDetailPage/page";
 import MyLoansPage from "./pages/MyLoansPage/page";
+import ProfilePage from "./pages/ProfilePage/page";
+import { ROUTES } from "./constants";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,29 +23,25 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public routes */}
-        <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-        <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
+    <Routes>
+      {/* Auth */}
+      <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+      <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
 
-        {/* Main routes */}
-        <Route path={ROUTES.BOOKS} element={<HomePage />} />
-        <Route path={ROUTES.BOOK_DETAIL} element={<BookDetailPage />} />
+      {/* Main */}
+      <Route path={ROUTES.BOOKS} element={<HomePage />} />
+      <Route path="/books/list" element={<BookListPage />} />
+      <Route path={ROUTES.BOOK_DETAIL} element={<BookDetailPage />} />
+      <Route path="/authors/:id" element={<AuthorDetailPage />} />
 
-        {/* Redirect root ke /books */}
-        <Route path="/" element={<Navigate to={ROUTES.BOOKS} replace />} />
+      {/* User */}
+      <Route path={ROUTES.MY_LOANS} element={<MyLoansPage />} />
+      <Route path={ROUTES.MY_PROFILE} element={<ProfilePage />} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to={ROUTES.BOOKS} replace />} />
-
-        <Route path="/books/list" element={<BookListPage />} />
-
-        <Route path="/authors/:id" element={<AuthorDetailPage />} />
-
-        <Route path="/my-loans" element={<MyLoansPage />} />
-      </Routes>
-    </BrowserRouter>
+      {/* Redirects */}
+      <Route path="/" element={<Navigate to={ROUTES.BOOKS} replace />} />
+      <Route path="*" element={<Navigate to={ROUTES.BOOKS} replace />} />
+    </Routes>
   );
 }
 
@@ -52,7 +49,9 @@ export default function Root() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
         <Toaster position="top-right" richColors closeButton />
       </QueryClientProvider>
     </Provider>

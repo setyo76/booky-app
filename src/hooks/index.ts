@@ -13,6 +13,7 @@ import * as loansApi from "../api/loansApi";
 import * as otherApis from "../api/otherApis";
 import { BooksQueryParams, RecommendedBooksParams, Book } from "../types";
 import { getErrorMessage } from "../api/axiosClient";
+import { getProfile, updateProfile, getMyLoans, getMyReviews } from "../api/meApi";
 
 // ============================================================
 // BOOKS HOOKS
@@ -95,17 +96,6 @@ export function usePopularAuthors() {
 // LOANS HOOKS
 // ============================================================
 
-export function useMyLoans(params?: {
-  status?: string;
-  page?: number;
-  limit?: number;
-}) {
-  return useQuery({
-    queryKey: [QUERY_KEYS.LOANS_MY, params],
-    queryFn: () => loansApi.getMyLoans(params),
-    staleTime: 1000 * 30, // Loans need fresher data
-  });
-}
 
 export function useAdminLoans(params?: {
   status?: string;
@@ -254,13 +244,6 @@ export function useBookReviews(bookId?: number, params?: { page?: number }) {
   });
 }
 
-export function useMyReviews(params?: { page?: number }) {
-  return useQuery({
-    queryKey: [QUERY_KEYS.REVIEWS_MY, params],
-    queryFn: () => otherApis.getMyReviews(params),
-    staleTime: 1000 * 60 * 2,
-  });
-}
 
 export function useCreateReview() {
   const queryClient = useQueryClient();
@@ -314,31 +297,6 @@ export function useMyProfile() {
   });
 }
 
-export function useUpdateProfile() {
-  const queryClient = useQueryClient();
-  const dispatch = useDispatch();
-
-  return useMutation({
-    mutationFn: otherApis.updateMyProfile,
-    onSuccess: (data) => {
-      toast.success(TOAST_MESSAGES.PROFILE_UPDATE_SUCCESS);
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PROFILE] });
-      // Also update Redux user state
-      if (data.data) {
-        dispatch({
-          type: "auth/updateUser",
-          payload: {
-            name: data.data.name,
-            email: data.data.email,
-          },
-        });
-      }
-    },
-    onError: (error) => {
-      toast.error(getErrorMessage(error) || TOAST_MESSAGES.PROFILE_UPDATE_ERROR);
-    },
-  });
-}
 
 // ============================================================
 // CART HOOKS
@@ -377,3 +335,35 @@ export function useAuthorDetail(authorId: number) {
   });
 }
 
+
+
+export function useProfile() {
+  return useQuery({
+    queryKey: [QUERY_KEYS.PROFILE],
+    queryFn: () => getProfile(),
+  });
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name?: string; phone?: string; bio?: string }) =>
+      updateProfile(data),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PROFILE] }),
+  });
+}
+
+export function useMyLoans(params?: { page?: number; limit?: number }) {
+  return useQuery({
+    queryKey: [QUERY_KEYS.LOANS_MY, params],
+    queryFn: () => getMyLoans(params),
+  });
+}
+
+export function useMyReviews(params?: { page?: number; limit?: number }) {
+  return useQuery({
+    queryKey: [QUERY_KEYS.REVIEWS_MY, params],
+    queryFn: () => getMyReviews(params),
+  });
+}

@@ -10,13 +10,9 @@ import { EmptyState, ErrorState } from "@/components/shared/StateViews";
 import { useMyLoans } from "@/hooks";
 import { Loan } from "@/types";
 import { cn } from "@/lib/utils";
+import ProfileTabs from "@/pages/ProfilePage/components/ProfileTabs";
 
-// ── Tab navigation (shared with ProfilePage) ─────────────────
-const PROFILE_TABS = [
-  { label: "Profile", path: "/profile" },
-  { label: "Borrowed List", path: "/my-loans" },
-  { label: "Reviews", path: "/my-reviews" },
-] as const;
+
 
 // ── Status filter pills ───────────────────────────────────────
 type StatusFilter = "ALL" | "BORROWED" | "RETURNED" | "OVERDUE";
@@ -77,25 +73,7 @@ export default function MyLoansPage() {
       <div className="page-container py-6 md:py-10 flex flex-col gap-6">
 
         {/* ── Tab navigation ── */}
-        <div className="flex border-b border-neutral-200">
-          {PROFILE_TABS.map((tab) => {
-            const isActive = tab.path === "/my-loans";
-            return (
-              <a
-                key={tab.path}
-                href={tab.path}
-                className={cn(
-                  "flex-1 md:flex-none md:px-8 py-3 text-sm font-semibold text-center transition-colors border-b-2 -mb-px",
-                  isActive
-                    ? "border-primary text-primary bg-white"
-                    : "border-transparent text-neutral-500 hover:text-neutral-800 bg-neutral-50 hover:bg-white"
-                )}
-              >
-                {tab.label}
-              </a>
-            );
-          })}
-        </div>
+          <ProfileTabs />
 
         {/* ── Page heading ── */}
         <h1 className="text-2xl font-bold text-neutral-900">Borrowed List</h1>

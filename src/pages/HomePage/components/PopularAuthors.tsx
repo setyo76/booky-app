@@ -36,7 +36,7 @@ export default function PopularAuthors() {
         {authors.map((author: import("@/types").Author) => (
           <Link
               to={`/authors/${author.id}`}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors"
+              key={author.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors"
             >
             {/* Avatar */}
             <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center shrink-0 overflow-hidden">

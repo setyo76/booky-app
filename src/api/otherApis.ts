@@ -242,3 +242,13 @@ export async function getAuthorDetail(authorId: number) {
   const response = await axiosClient.get(`/authors/${authorId}`);
   return response.data;
 }
+
+export async function getProfile() {
+  const response = await axiosClient.get("/users/profile");
+  return response.data;
+}
+
+export async function updateProfile(data: UpdateProfileRequest) {
+  const response = await axiosClient.put("/users/profile", data);
+  return response.data;
+}
