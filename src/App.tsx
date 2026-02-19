@@ -10,6 +10,7 @@ import HomePage from "./pages/HomePage/page";
 import BookDetailPage from "./pages/BookDetailPage/page";
 import { ROUTES } from "./constants";
 import BookListPage from "./pages/BookListPage/page";
+import AuthorDetailPage from "./pages/AuthorDetailPage/page";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +38,8 @@ function App() {
         <Route path="*" element={<Navigate to={ROUTES.BOOKS} replace />} />
 
         <Route path="/books/list" element={<BookListPage />} />
+
+        <Route path="/authors/:id" element={<AuthorDetailPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -368,3 +368,11 @@ export function useCheckoutCart() {
     },
   });
 }
+
+export function useAuthorDetail(authorId: number) {
+  return useQuery({
+    queryKey: ["author-detail", authorId],
+    queryFn: () => getAuthorDetail(authorId),
+    enabled: !!authorId && authorId > 0,
+  });
+}

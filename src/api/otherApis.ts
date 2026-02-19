@@ -237,3 +237,8 @@ export async function removeFromCart(
   );
   return response.data;
 }
+
+export async function getAuthorDetail(authorId: number) {
+  const response = await axiosClient.get(`/authors/${authorId}`);
+  return response.data;
+}

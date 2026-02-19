@@ -1,5 +1,6 @@
 import { User, BookOpen } from "lucide-react";
 import { usePopularAuthors } from "@/hooks";
+import { Link } from "react-router-dom";
 
 
 export default function PopularAuthors() {
@@ -33,10 +34,10 @@ export default function PopularAuthors() {
 
       <div className="flex flex-col md:flex-row md:flex-wrap gap-3">
         {authors.map((author: import("@/types").Author) => (
-          <div
-            key={author.id}
-            className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors cursor-default"
-          >
+          <Link
+              to={`/authors/${author.id}`}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 transition-colors"
+            >
             {/* Avatar */}
             <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center shrink-0 overflow-hidden">
               <User className="w-6 h-6 text-neutral-400" />
@@ -50,7 +51,7 @@ export default function PopularAuthors() {
                 <span>5 books</span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>

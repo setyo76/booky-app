@@ -8,8 +8,9 @@ import {
 
 import { selectIsAuthenticated, selectUser, selectIsAdmin, logout } from "../../store/authSlice";
 import { selectCartCount } from "../../store/cartSlice";
-import { selectSearchQuery, setSearchQuery } from "../../store/uiSlice";
+import { setSearchQuery } from "../../store/uiSlice";
 import { ROUTES } from "../../constants";
+import SearchAutocomplete from "../shared/SearchAutocomplete";
 
 interface NavbarProps {
   showSearch?: boolean;
@@ -23,7 +24,6 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
   const user = useSelector(selectUser);
   const isAdmin = useSelector(selectIsAdmin);
   const cartCount = useSelector(selectCartCount);
-  const searchQuery = useSelector(selectSearchQuery);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -33,20 +33,6 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
     dispatch(logout());
     setMobileMenuOpen(false);
     navigate(ROUTES.LOGIN);
-  }
-
-  // Navigate to BookListPage on Enter
-  function handleSearchKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      navigate("/books/list");
-    }
-  }
-
-  function handleMobileSearchKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      setMobileSearchOpen(false);
-      navigate("/books/list");
-    }
   }
 
   return (
@@ -61,25 +47,10 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
             <span className="text-[22px] font-bold text-neutral-900">Booky</span>
           </Link>
 
-          {/* Search bar — user only */}
+          {/* Search autocomplete — user only */}
           {isAuthenticated && !isAdmin && showSearch && (
             <div className="flex-1 max-w-[491px] mx-8">
-              <div className="relative flex items-center h-12 bg-neutral-50 border border-neutral-200 rounded-full px-4 gap-1.5 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-                <Search className="w-5 h-5 text-neutral-400 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Search book"
-                  value={searchQuery}
-                  onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                  onKeyDown={handleSearchKeyDown}
-                  className="flex-1 bg-transparent outline-none text-sm font-medium text-neutral-900 placeholder:text-neutral-400"
-                />
-                {searchQuery && (
-                  <button onClick={() => dispatch(setSearchQuery(""))} className="text-neutral-400 hover:text-neutral-600">
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+              <SearchAutocomplete placeholder="Search book" />
             </div>
           )}
 
@@ -160,20 +131,18 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
         {/* Mobile search expanded */}
         {mobileSearchOpen ? (
           <div className="flex items-center h-14 px-4 gap-3">
-            <div className="flex-1 flex items-center h-10 bg-neutral-50 border border-neutral-200 rounded-full px-3 gap-2 focus-within:border-primary transition-all">
-              <Search className="w-4 h-4 text-neutral-400 shrink-0" />
-              <input
-                type="text"
+            <div className="flex-1">
+              <SearchAutocomplete
                 placeholder="Search book"
-                value={searchQuery}
-                onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                onKeyDown={handleMobileSearchKeyDown}
-                autoFocus
-                className="flex-1 bg-transparent outline-none text-sm font-medium text-neutral-900 placeholder:text-neutral-400"
+                onNavigate={() => setMobileSearchOpen(false)}
+                inputClassName="h-10 rounded-full text-sm"
               />
             </div>
             <button
-              onClick={() => { setMobileSearchOpen(false); dispatch(setSearchQuery("")); }}
+              onClick={() => {
+                setMobileSearchOpen(false);
+                dispatch(setSearchQuery(""));
+              }}
               className="shrink-0"
             >
               <X className="w-5 h-5 text-neutral-600" />
