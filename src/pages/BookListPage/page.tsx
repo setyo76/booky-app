@@ -12,7 +12,8 @@ import Button from "@/components/shared/Button";
 import { SkeletonBookGrid } from "@/components/shared/LoadingSpinner";
 import { EmptySearch, ErrorState } from "@/components/shared/StateViews";
 
-import { useBooks, useBorrowBook } from "@/hooks";
+// ✅ Hapus import Redux cart, tambah server cart hooks
+import { useBooks, useBorrowBook, useCart, useAddToCart, useRemoveFromCart } from "@/hooks";
 import {
   selectSelectedCategoryId,
   selectMinRating,
@@ -21,9 +22,7 @@ import {
   setCurrentPage,
 } from "@/store/uiSlice";
 import { selectIsAuthenticated } from "@/store/authSlice";
-import { selectIsInCart, addItem, removeItem } from "@/store/cartSlice";
 import { Book } from "@/types";
-import { TOAST_MESSAGES, PAGINATION } from "@/constants";
 
 export default function BookListPage() {
   const dispatch = useDispatch();
@@ -35,8 +34,6 @@ export default function BookListPage() {
   const searchQuery = useSelector(selectSearchQuery);
   const currentPage = useSelector(selectCurrentPage);
 
-  // Fix: tambahkan dispatch ke dependency array untuk satisfiy eslint,
-  // dispatch dari Redux tidak pernah berubah jadi aman
   useEffect(() => {
     dispatch(setCurrentPage(1));
   }, [selectedCategoryId, minRating, searchQuery, dispatch]);
@@ -54,15 +51,16 @@ export default function BookListPage() {
 
   const { mutate: borrowBook, isPending: isBorrowing } = useBorrowBook();
 
+  // ✅ Fetch server cart sekali di parent, pass ke setiap card
+  const { data: cartData } = useCart();
+  const cartItems = cartData?.data?.items ?? [];
+
   function handleBorrow(book: Book) {
     if (!isAuthenticated) {
       toast.error("Silakan login untuk meminjam buku.");
       return;
     }
-    borrowBook(book.id, {
-      onSuccess: () => toast.success(TOAST_MESSAGES.BORROW_SUCCESS),
-      onError: () => toast.error(TOAST_MESSAGES.BORROW_ERROR),
-    });
+    borrowBook(book.id);
   }
 
   return (
@@ -110,6 +108,7 @@ export default function BookListPage() {
                       book={book}
                       onBorrow={handleBorrow}
                       isBorrowing={isBorrowing}
+                      cartItems={cartItems}
                     />
                   ))}
                 </div>
@@ -145,21 +144,25 @@ function BookCardWithCart({
   book,
   onBorrow,
   isBorrowing,
+  cartItems,
 }: {
   book: Book;
   onBorrow: (book: Book) => void;
   isBorrowing: boolean;
+  cartItems: { id: number; bookId: number }[];
 }) {
-  const dispatch = useDispatch();
-  const isInCart = useSelector(selectIsInCart(book.id));
+  // ✅ Cek isInCart dari server cart items
+  const cartItem = cartItems.find((item) => item.bookId === book.id);
+  const isInCart = !!cartItem;
+
+  const { mutate: addToCart, isPending: isAdding } = useAddToCart();
+  const { mutate: removeFromCart, isPending: isRemoving } = useRemoveFromCart();
 
   function handleCartToggle() {
-    if (isInCart) {
-      dispatch(removeItem(book.id));
-      toast.success(TOAST_MESSAGES.CART_REMOVED);
+    if (isInCart && cartItem) {
+      removeFromCart(cartItem.id);
     } else {
-      dispatch(addItem(book));
-      toast.success(TOAST_MESSAGES.CART_ADDED);
+      addToCart(book.id);
     }
   }
 
@@ -169,6 +172,7 @@ function BookCardWithCart({
       onBorrow={onBorrow}
       onAddToCart={handleCartToggle}
       isInCart={isInCart}
+      isCartLoading={isAdding || isRemoving}
       isBorrowing={isBorrowing}
     />
   );

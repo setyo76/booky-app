@@ -15,36 +15,46 @@ interface LoanCardProps {
   loan: Loan;
 }
 
-function formatDate(dateStr: string): string {
-  try {
-    return new Date(dateStr).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return dateStr;
+// ✅ Ambil nilai tanggal dengan fallback ke semua kemungkinan nama field
+function getDateValue(loan: Loan, field: "dueDate" | "borrowDate"): string {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const raw = loan as any;
+  if (field === "dueDate") {
+    return raw.dueDate ?? raw.due_date ?? raw.dueAt ?? raw.due_at ?? raw.returnDeadline ?? "";
   }
+  return raw.borrowDate ?? raw.borrow_date ?? raw.borrowedAt ?? raw.borrowed_at ?? raw.loanDate ?? "";
 }
 
-function getDuration(borrowDate: string, dueDate: string): string {
-  try {
-    const diff =
-      new Date(dueDate).getTime() - new Date(borrowDate).getTime();
-    const days = Math.round(diff / (1000 * 60 * 60 * 24));
-    return `Duration ${days} Days`;
-  } catch {
-    return "";
-  }
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
-function getDueDateColor(dueDate: string, status: string): string {
+function getDuration(borrowDate?: string, dueDate?: string): string {
+  if (!borrowDate || !dueDate) return "";
+  const b = new Date(borrowDate);
+  const d = new Date(dueDate);
+  if (isNaN(b.getTime()) || isNaN(d.getTime())) return "";
+  const days = Math.round((d.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return "";
+  return `Duration ${days} Days`;
+}
+
+function getDueDateColor(dueDate?: string, status?: string): string {
+  if (!dueDate) return "text-neutral-500 bg-neutral-100";
+  const d = new Date(dueDate);
+  if (isNaN(d.getTime())) return "text-neutral-500 bg-neutral-100";
   if (status === "RETURNED") return "text-neutral-500 bg-neutral-100";
-  const due = new Date(dueDate);
   const now = new Date();
-  if (due < now) return "text-red-600 bg-red-50"; // overdue
-  const diff = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-  if (diff <= 3) return "text-orange-600 bg-orange-50"; // near due
+  if (d < now) return "text-red-600 bg-red-50";
+  const diff = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+  if (diff <= 3) return "text-orange-600 bg-orange-50";
   return "text-red-500 bg-red-50";
 }
 
@@ -62,10 +72,17 @@ export default function LoanCard({ loan }: LoanCardProps) {
   const { mutate: createReview, isPending } = useCreateReview();
 
   const book = loan.book;
+  const dueDate = getDateValue(loan, "dueDate");
+  const borrowDate = getDateValue(loan, "borrowDate");
+
   const isOverdue =
-    loan.status === "BORROWED" && new Date(loan.dueDate) < new Date();
+    loan.status === "BORROWED" &&
+    !!dueDate &&
+    !isNaN(new Date(dueDate).getTime()) &&
+    new Date(dueDate) < new Date();
 
   const displayStatus = isOverdue ? "OVERDUE" : loan.status;
+  const duration = getDuration(borrowDate, dueDate);
 
   function handleSubmitReview(e: React.FormEvent) {
     e.preventDefault();
@@ -106,12 +123,9 @@ export default function LoanCard({ loan }: LoanCardProps) {
             Due Date
           </span>
           <span
-            className={`text-xs font-bold px-2 py-0.5 rounded-md ${getDueDateColor(
-              loan.dueDate,
-              loan.status
-            )}`}
+            className={`text-xs font-bold px-2 py-0.5 rounded-md ${getDueDateColor(dueDate, loan.status)}`}
           >
-            {formatDate(loan.dueDate)}
+            {formatDate(dueDate)}
           </span>
         </div>
       </div>
@@ -155,31 +169,27 @@ export default function LoanCard({ loan }: LoanCardProps) {
             {book?.author?.name ?? book?.authorName ?? "Unknown Author"}
           </p>
           <p className="text-xs font-medium text-neutral-500">
-            {formatDate(loan.borrowDate)}
-            {" · "}
-            {getDuration(loan.borrowDate, loan.dueDate)}
+            {formatDate(borrowDate)}
+            {duration ? ` · ${duration}` : ""}
           </p>
         </div>
 
-        {/* Give Review button — desktop (md+) */}
+        {/* Give Review button — desktop */}
         <div className="hidden md:block shrink-0">
           <Button
             size="sm"
             onClick={() => setShowReviewForm((v) => !v)}
             className="whitespace-nowrap"
           >
-            Give Review
+            {showReviewForm ? "Tutup" : "Give Review"}
           </Button>
         </div>
       </div>
 
       {/* Give Review button — mobile */}
       <div className="md:hidden px-4 pb-4">
-        <Button
-          className="w-full"
-          onClick={() => setShowReviewForm((v) => !v)}
-        >
-          Give Review
+        <Button className="w-full" onClick={() => setShowReviewForm((v) => !v)}>
+          {showReviewForm ? "Tutup" : "Give Review"}
         </Button>
       </div>
 

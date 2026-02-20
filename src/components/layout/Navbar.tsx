@@ -7,10 +7,12 @@ import {
 } from "lucide-react";
 
 import { selectIsAuthenticated, selectUser, selectIsAdmin, logout } from "../../store/authSlice";
-import { selectCartCount } from "../../store/cartSlice";
 import { setSearchQuery } from "../../store/uiSlice";
 import { ROUTES } from "../../constants";
 import SearchAutocomplete from "../shared/SearchAutocomplete";
+
+// ✅ Ganti Redux selectCartCount dengan useCart hook (server-side)
+import { useCart } from "../../hooks";
 
 interface NavbarProps {
   showSearch?: boolean;
@@ -23,7 +25,10 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const user = useSelector(selectUser);
   const isAdmin = useSelector(selectIsAdmin);
-  const cartCount = useSelector(selectCartCount);
+
+  // ✅ Ambil jumlah cart dari server, bukan Redux
+  const { data: cartData } = useCart();
+  const cartCount = cartData?.data?.items?.length ?? 0;
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);

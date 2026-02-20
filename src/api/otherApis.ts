@@ -9,14 +9,13 @@ import {
   CreateAuthorRequest,
   UserProfile,
   UpdateProfileRequest,
-  Cart,
 } from "../types";
 
 // ============================================================
 // REVIEWS API
 // ============================================================
 
-// POST /api/reviews — create review for a book
+// POST /api/reviews — create or update review for a book
 export async function createReview(
   data: CreateReviewRequest
 ): Promise<ApiResponse<{ review: Review }>> {
@@ -27,19 +26,17 @@ export async function createReview(
   return response.data;
 }
 
-// GET /api/reviews/book/:bookId — get reviews for a book
+// ✅ GET /api/reviews/book/:bookId — get reviews for a book (path param, bukan query param)
 export async function getBookReviews(params?: {
   bookId?: number;
   page?: number;
   limit?: number;
-  sort?: string;
-  comment?: string;
-  book?: string;
-  minRating?: number;
 }): Promise<ReviewsResponse> {
-  const response = await axiosClient.get<ReviewsResponse>("/reviews", {
-    params,
-  });
+  const { bookId, ...rest } = params ?? {};
+  const response = await axiosClient.get<ReviewsResponse>(
+    `/reviews/book/${bookId}`,
+    { params: rest }
+  );
   return response.data;
 }
 
@@ -68,7 +65,6 @@ export async function getMyReviews(params?: {
 // CATEGORIES API
 // ============================================================
 
-// GET /api/categories — list all categories
 export async function getCategories(): Promise<
   ApiResponse<{ categories: Category[] }>
 > {
@@ -78,7 +74,6 @@ export async function getCategories(): Promise<
   return response.data;
 }
 
-// POST /api/categories — create category (admin)
 export async function createCategory(data: {
   name: string;
 }): Promise<ApiResponse<{ category: Category }>> {
@@ -89,7 +84,6 @@ export async function createCategory(data: {
   return response.data;
 }
 
-// PUT /api/categories/:id — update category (admin)
 export async function updateCategory(
   id: number,
   data: { name: string }
@@ -101,7 +95,6 @@ export async function updateCategory(
   return response.data;
 }
 
-// DELETE /api/categories/:id — delete category (admin)
 export async function deleteCategory(id: number): Promise<ApiResponse<null>> {
   const response = await axiosClient.delete<ApiResponse<null>>(
     `/categories/${id}`
@@ -113,7 +106,6 @@ export async function deleteCategory(id: number): Promise<ApiResponse<null>> {
 // AUTHORS API
 // ============================================================
 
-// GET /api/authors — list authors (optional search by name)
 export async function getAuthors(params?: {
   q?: string;
 }): Promise<ApiResponse<{ authors: Author[] }>> {
@@ -124,7 +116,6 @@ export async function getAuthors(params?: {
   return response.data;
 }
 
-// GET /api/authors/popular — popular authors
 export async function getPopularAuthors(): Promise<
   ApiResponse<{ authors: Author[] }>
 > {
@@ -134,7 +125,11 @@ export async function getPopularAuthors(): Promise<
   return response.data;
 }
 
-// POST /api/authors — create author (admin)
+export async function getAuthorDetail(authorId: number) {
+  const response = await axiosClient.get(`/authors/${authorId}`);
+  return response.data;
+}
+
 export async function createAuthor(
   data: CreateAuthorRequest
 ): Promise<ApiResponse<{ author: Author }>> {
@@ -145,7 +140,6 @@ export async function createAuthor(
   return response.data;
 }
 
-// PUT /api/authors/:id — update author (admin)
 export async function updateAuthor(
   id: number,
   data: CreateAuthorRequest
@@ -157,7 +151,6 @@ export async function updateAuthor(
   return response.data;
 }
 
-// DELETE /api/authors/:id — delete author (admin)
 export async function deleteAuthor(id: number): Promise<ApiResponse<null>> {
   const response = await axiosClient.delete<ApiResponse<null>>(
     `/authors/${id}`
@@ -169,13 +162,11 @@ export async function deleteAuthor(id: number): Promise<ApiResponse<null>> {
 // USER PROFILE API
 // ============================================================
 
-// GET /api/me — get own profile + loan stats
 export async function getMyProfile(): Promise<ApiResponse<UserProfile>> {
   const response = await axiosClient.get<ApiResponse<UserProfile>>("/me");
   return response.data;
 }
 
-// PATCH /api/me — update own profile
 export async function updateMyProfile(
   data: UpdateProfileRequest
 ): Promise<ApiResponse<UserProfile>> {
@@ -186,7 +177,6 @@ export async function updateMyProfile(
   return response.data;
 }
 
-// GET /api/admin/users — list all users (admin)
 export async function getAdminUsers(params?: {
   search?: string;
   page?: number;
@@ -197,58 +187,15 @@ export async function getAdminUsers(params?: {
 }
 
 // ============================================================
-// CART API
+// PROFILE (legacy — tetap ada agar tidak break)
 // ============================================================
 
-// GET /api/cart — get my cart
-export async function getCart(): Promise<ApiResponse<Cart>> {
-  const response = await axiosClient.get<ApiResponse<Cart>>("/cart");
-  return response.data;
-}
-
-// DELETE /api/cart — clear cart
-export async function clearCart(): Promise<ApiResponse<null>> {
-  const response = await axiosClient.delete<ApiResponse<null>>("/cart");
-  return response.data;
-}
-
-// GET /api/cart/checkout — checkout cart (borrow all books in cart)
-export async function checkoutCart(): Promise<ApiResponse<{ loans: import("../types").Loan[] }>> {
-  const response = await axiosClient.get("/cart/checkout");
-  return response.data;
-}
-
-// POST /api/cart/items — add book to cart
-export async function addToCart(
-  bookId: number
-): Promise<ApiResponse<Cart>> {
-  const response = await axiosClient.post<ApiResponse<Cart>>("/cart/items", {
-    bookId,
-  });
-  return response.data;
-}
-
-// DELETE /api/cart/items/:itemId — remove item from cart
-export async function removeFromCart(
-  itemId: number
-): Promise<ApiResponse<null>> {
-  const response = await axiosClient.delete<ApiResponse<null>>(
-    `/cart/items/${itemId}`
-  );
-  return response.data;
-}
-
-export async function getAuthorDetail(authorId: number) {
-  const response = await axiosClient.get(`/authors/${authorId}`);
-  return response.data;
-}
-
 export async function getProfile() {
-  const response = await axiosClient.get("/users/profile");
+  const response = await axiosClient.get("/me");
   return response.data;
 }
 
 export async function updateProfile(data: UpdateProfileRequest) {
-  const response = await axiosClient.put("/users/profile", data);
+  const response = await axiosClient.patch("/me", data);
   return response.data;
 }

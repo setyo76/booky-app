@@ -12,7 +12,7 @@ import Button from '@/components/shared/Button';
 import { SkeletonBookGrid } from '@/components/shared/LoadingSpinner';
 import { EmptySearch, ErrorState } from '@/components/shared/StateViews';
 
-import { useRecommendedBooks, useBorrowBook } from '@/hooks';
+import { useRecommendedBooks, useBorrowBook, useCart } from '@/hooks';
 import { selectSelectedCategoryId, selectSearchQuery } from '@/store/uiSlice';
 import { selectIsAuthenticated } from '@/store/authSlice';
 import { selectIsInCart, addItem, removeItem } from '@/store/cartSlice';
@@ -150,7 +150,9 @@ function BookCardWithCart({ book, onBorrow, onCartToggle, isBorrowing }: {
   onCartToggle: (book: Book) => void;
   isBorrowing: boolean;
 }) {
-  const isInCart = useSelector(selectIsInCart(book.id));
+
+const { data: cartData } = useCart();
+const isInCart = cartData?.data?.items?.some(item => item.bookId === book.id) ?? false;
 
   return (
     <BookCard

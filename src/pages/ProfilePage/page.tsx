@@ -3,17 +3,26 @@ import { User } from "lucide-react";
 import { toast } from "sonner";
 
 import MainLayout from "@/components/layout/MainLayout";
-import ProfileTabs from "./components/ProfileTabs";
 import Button from "@/components/shared/Button";
 import Modal from "@/components/shared/Modal";
 import { FormField, Input, Textarea } from "@/components/shared/FormField";
 import { ErrorState } from "@/components/shared/StateViews";
+import ReviewsTab from "@/pages/ProfilePage/components/ReviewsTab";
 
 import { useProfile, useUpdateProfile } from "@/hooks";
 import { TOAST_MESSAGES } from "@/constants";
 import { UpdateProfileRequest } from "@/types";
 
-// ── Profile info row ─────────────────────────────────────────
+// ── Tab type ──────────────────────────────────────────────────
+type TabId = "profile" | "borrowed" | "reviews";
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: "profile", label: "Profile" },
+  { id: "borrowed", label: "Borrowed List" },
+  { id: "reviews", label: "Reviews" },
+];
+
+// ── Profile info row ──────────────────────────────────────────
 function ProfileRow({ label, value }: { label: string; value?: string }) {
   return (
     <div className="flex items-center justify-between py-3.5 border-b border-neutral-100 last:border-0">
@@ -27,6 +36,8 @@ function ProfileRow({ label, value }: { label: string; value?: string }) {
 
 // ── Main page ─────────────────────────────────────────────────
 export default function ProfilePage() {
+  // ✅ activeTab dikelola di ProfilePage, bukan di ProfileTabs terpisah
+  const [activeTab, setActiveTab] = useState<TabId>("profile");
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState<UpdateProfileRequest>({});
 
@@ -65,65 +76,104 @@ export default function ProfilePage() {
     <MainLayout showSearch={false}>
       <div className="page-container py-6 md:py-10 flex flex-col gap-6">
 
-        {/* Tabs */}
-        <ProfileTabs />
+        {/* ── Tab Navigation ──────────────────────────────────── */}
+        <div className="flex items-center bg-neutral-100 rounded-xl p-1 gap-1 w-full md:w-fit">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 md:flex-none px-5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "bg-white text-neutral-900 shadow-sm"
+                  : "text-neutral-500 hover:text-neutral-700"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-        {/* Heading */}
-        <h1 className="text-2xl font-bold text-neutral-900">Profile</h1>
+        {/* ── Tab: Profile ────────────────────────────────────── */}
+        {activeTab === "profile" && (
+          <>
+            <h1 className="text-2xl font-bold text-neutral-900">Profile</h1>
 
-        {/* Error */}
-        {isError && <ErrorState onRetry={refetch} />}
+            {isError && <ErrorState onRetry={refetch} />}
 
-        {/* Loading skeleton */}
-        {isLoading && (
-          <div className="border border-neutral-200 rounded-2xl p-5 flex flex-col gap-4 animate-pulse max-w-lg">
-            <div className="w-16 h-16 rounded-full bg-neutral-200" />
-            <div className="flex flex-col gap-3 mt-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex justify-between py-2 border-b border-neutral-100">
-                  <div className="h-3 w-24 bg-neutral-200 rounded-full" />
-                  <div className="h-3 w-32 bg-neutral-200 rounded-full" />
+            {isLoading && (
+              <div className="border border-neutral-200 rounded-2xl p-5 flex flex-col gap-4 animate-pulse max-w-lg">
+                <div className="w-16 h-16 rounded-full bg-neutral-200" />
+                <div className="flex flex-col gap-3 mt-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex justify-between py-2 border-b border-neutral-100"
+                    >
+                      <div className="h-3 w-24 bg-neutral-200 rounded-full" />
+                      <div className="h-3 w-32 bg-neutral-200 rounded-full" />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="h-11 rounded-full bg-neutral-200 mt-2" />
-          </div>
-        )}
-
-        {/* Profile card */}
-        {!isLoading && !isError && profile && (
-          <div className="border border-neutral-200 rounded-2xl p-5 flex flex-col gap-1 max-w-lg bg-white">
-
-            {/* Avatar */}
-            <div className="w-16 h-16 rounded-full bg-neutral-200 flex items-center justify-center overflow-hidden mb-3">
-              {profile.profilePhoto ? (
-                <img
-                  src={profile.profilePhoto}
-                  alt={profile.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User className="w-8 h-8 text-neutral-400" />
-              )}
-            </div>
-
-            {/* Info rows */}
-            <ProfileRow label="Name" value={profile.name} />
-            <ProfileRow label="Email" value={profile.email} />
-            <ProfileRow label="Nomor Handphone" value={profile.phone} />
-            {profile.bio && (
-              <ProfileRow label="Bio" value={profile.bio} />
+                <div className="h-11 rounded-full bg-neutral-200 mt-2" />
+              </div>
             )}
 
-            {/* Update button */}
-            <Button className="w-full mt-4" onClick={openEdit}>
-              Update Profile
-            </Button>
-          </div>
+            {!isLoading && !isError && profile && (
+              <div className="border border-neutral-200 rounded-2xl p-5 flex flex-col gap-1 max-w-lg bg-white">
+                {/* Avatar + Role badge */}
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-16 h-16 rounded-full bg-neutral-200 flex items-center justify-center overflow-hidden shrink-0">
+                    {profile.profilePhoto ? (
+                      <img
+                        src={profile.profilePhoto}
+                        alt={profile.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-8 h-8 text-neutral-400" />
+                    )}
+                  </div>
+                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-neutral-100 text-neutral-600 uppercase tracking-widest">
+                    {(profile as any).role ?? 'USER'}
+                  </span>
+                </div>
+
+                <ProfileRow label="Name" value={profile.name} />
+                <ProfileRow label="Email" value={profile.email} />
+                <ProfileRow label="Nomor Handphone" value={profile.phone} />
+                {profile.bio && <ProfileRow label="Bio" value={profile.bio} />}
+
+                <Button className="w-full mt-4" onClick={openEdit}>
+                  Update Profile
+                </Button>
+              </div>
+            )}
+          </>
         )}
+
+        {/* ── Tab: Borrowed List ──────────────────────────────── */}
+        {activeTab === "borrowed" && (
+          <>
+            <h1 className="text-2xl font-bold text-neutral-900">
+              Borrowed List
+            </h1>
+            {/*
+              Jika kamu punya BorrowedListTab atau MyLoansPage content,
+              render di sini. Contoh:
+              <BorrowedListTab />
+            */}
+            <p className="text-sm text-neutral-400">
+              Konten borrowed list di sini.
+            </p>
+          </>
+        )}
+
+        {/* ── Tab: Reviews ✅ ─────────────────────────────────── */}
+        {activeTab === "reviews" && <ReviewsTab />}
+
       </div>
 
-      {/* ── Edit Modal ─────────────────────────────────────────── */}
+      {/* ── Edit Profile Modal ────────────────────────────────── */}
       <Modal
         isOpen={editOpen}
         onClose={() => setEditOpen(false)}

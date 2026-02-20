@@ -28,7 +28,7 @@ export function useBooks(params: BooksQueryParams = {}) {
         page: PAGINATION.DEFAULT_PAGE,
         ...params,
       }),
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 60 * 2,
   });
 }
 
@@ -72,7 +72,7 @@ export function useCategories() {
   return useQuery({
     queryKey: [QUERY_KEYS.CATEGORIES],
     queryFn: otherApis.getCategories,
-    staleTime: 1000 * 60 * 30, // Categories rarely change
+    staleTime: 1000 * 60 * 30,
   });
 }
 
@@ -95,7 +95,6 @@ export function usePopularAuthors() {
 // ============================================================
 // LOANS HOOKS
 // ============================================================
-
 
 export function useAdminLoans(params?: {
   status?: string;
@@ -128,20 +127,16 @@ export function useBorrowBook() {
   return useMutation({
     mutationFn: (bookId: number) => loansApi.borrowBook({ bookId }),
 
-    // Optimistic update: decrease availableCopies immediately
     onMutate: async (bookId: number) => {
-      // Cancel in-flight queries for this book
       await queryClient.cancelQueries({
         queryKey: [QUERY_KEYS.BOOK_DETAIL, bookId],
       });
 
-      // Snapshot previous value
       const previousBook = queryClient.getQueryData([
         QUERY_KEYS.BOOK_DETAIL,
         bookId,
       ]);
 
-      // Optimistically update
       queryClient.setQueryData(
         [QUERY_KEYS.BOOK_DETAIL, bookId],
         (old: { data: Book } | undefined) => {
@@ -150,16 +145,12 @@ export function useBorrowBook() {
             ...old,
             data: {
               ...old.data,
-              availableCopies: Math.max(
-                0,
-                (old.data.availableCopies ?? 1) - 1
-              ),
+              availableCopies: Math.max(0, (old.data.availableCopies ?? 1) - 1),
             },
           };
         }
       );
 
-      // Also update books list if cached
       queryClient.setQueriesData(
         { queryKey: [QUERY_KEYS.BOOKS] },
         (old: { data?: { books?: Book[] } } | undefined) => {
@@ -172,10 +163,7 @@ export function useBorrowBook() {
                 book.id === bookId
                   ? {
                       ...book,
-                      availableCopies: Math.max(
-                        0,
-                        (book.availableCopies ?? 1) - 1
-                      ),
+                      availableCopies: Math.max(0, (book.availableCopies ?? 1) - 1),
                     }
                   : book
               ),
@@ -187,12 +175,34 @@ export function useBorrowBook() {
       return { previousBook };
     },
 
-    onSuccess: () => {
+    onSuccess: (_, bookId) => {
       toast.success(TOAST_MESSAGES.BORROW_SUCCESS);
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LOANS_MY] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOOKS] });
+
+      // ✅ Cek apakah buku ini ada di server cart — jika ada, hapus manual
+      // karena backend tidak otomatis menghapus cart item saat borrow langsung
+      const cartData = queryClient.getQueryData<{
+        data: { items: { id: number; bookId: number }[] };
+      }>([QUERY_KEYS.CART]);
+
+      const cartItem = cartData?.data?.items?.find(
+        (item) => item.bookId === bookId
+      );
+
+      if (cartItem) {
+        // Hapus dari server cart lalu invalidate
+        cartApi.removeFromCart(cartItem.id).then(() => {
+          queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
+        }).catch(() => {
+          // Jika hapus gagal, tetap invalidate agar UI sync
+          queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
+      }
     },
 
-    // Rollback on error
     onError: (error, bookId, context) => {
       if (context?.previousBook) {
         queryClient.setQueryData(
@@ -244,7 +254,6 @@ export function useBookReviews(bookId?: number, params?: { page?: number }) {
   });
 }
 
-
 export function useCreateReview() {
   const queryClient = useQueryClient();
 
@@ -272,12 +281,8 @@ export function useDeleteReview() {
     mutationFn: otherApis.deleteReview,
     onSuccess: () => {
       toast.success(TOAST_MESSAGES.REVIEW_DELETE_SUCCESS);
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.REVIEWS_BOOK],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.REVIEWS_MY],
-      });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.REVIEWS_BOOK] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.REVIEWS_MY] });
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
@@ -297,20 +302,13 @@ export function useMyProfile() {
   });
 }
 
-
-// ============================================================
-// CART HOOKS
-// ============================================================
-
 export function useAuthorDetail(authorId: number) {
   return useQuery({
     queryKey: ["author-detail", authorId],
-    queryFn: () => otherApis.getAuthorDetail(authorId), // sesuaikan nama fungsinya
+    queryFn: () => otherApis.getAuthorDetail(authorId),
     enabled: !!authorId && authorId > 0,
   });
 }
-
-
 
 export function useProfile() {
   return useQuery({
@@ -343,7 +341,9 @@ export function useMyReviews(params?: { page?: number; limit?: number }) {
   });
 }
 
-// ── Cart Hooks ───────────────────────────────────────────────
+// ============================================================
+// CART HOOKS
+// ============================================================
 
 export function useCart() {
   return useQuery({
@@ -353,16 +353,14 @@ export function useCart() {
   });
 }
 
-// GET /api/cart/checkout — user info + book list
 export function useCartCheckout() {
   return useQuery({
     queryKey: [QUERY_KEYS.CART, "checkout"],
     queryFn: cartApi.getCartCheckout,
-    staleTime: 0, // selalu fresh
+    staleTime: 0,
   });
 }
 
-// POST /api/cart/items — tambah buku ke server cart
 export function useAddToCart() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -377,7 +375,6 @@ export function useAddToCart() {
   });
 }
 
-// DELETE /api/cart/items/:itemId
 export function useRemoveFromCart() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -392,7 +389,6 @@ export function useRemoveFromCart() {
   });
 }
 
-// DELETE /api/cart — clear semua
 export function useClearCart() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -403,9 +399,10 @@ export function useClearCart() {
   });
 }
 
-// ── Borrow From Cart ─────────────────────────────────────────
+// ============================================================
+// BORROW FROM CART
+// ============================================================
 
-// POST /api/loans/from-cart — checkout bulk dari cart
 export function useBorrowFromCart() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -416,8 +413,8 @@ export function useBorrowFromCart() {
     }) => loansApi.borrowFromCart(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LOANS_MY] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOOKS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
     },
     onError: (error) => {
       toast.error(getErrorMessage(error) || TOAST_MESSAGES.BORROW_ERROR);

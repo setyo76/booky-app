@@ -1,0 +1,117 @@
+import { useState } from "react";
+import { X, Star } from "lucide-react";
+import { toast } from "sonner";
+
+import Button from "@/components/shared/Button";
+import { useCreateReview } from "@/hooks";
+
+interface GiveReviewModalProps {
+  bookId: number;
+  bookTitle?: string;
+  open: boolean;
+  onClose: () => void;
+}
+
+export default function GiveReviewModal({
+  bookId,
+  bookTitle,
+  open,
+  onClose,
+}: GiveReviewModalProps) {
+  const [rating, setRating] = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [comment, setComment] = useState("");
+
+  const { mutate: createReview, isPending } = useCreateReview();
+
+  function handleSubmit() {
+    if (rating === 0) {
+      toast.error("Pilih rating terlebih dahulu.");
+      return;
+    }
+    createReview(
+      { bookId, rating, comment: comment.trim() || undefined },
+      {
+        onSuccess: () => {
+          toast.success("Review berhasil dikirim!");
+          handleClose();
+        },
+      }
+    );
+  }
+
+  function handleClose() {
+    setRating(0);
+    setHovered(0);
+    setComment("");
+    onClose();
+  }
+
+  if (!open) return null;
+
+  return (
+    /* Backdrop */
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
+    >
+      {/* Modal */}
+      <div className="relative w-full max-w-[439px] bg-white rounded-2xl p-6 flex flex-col gap-6 shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-neutral-900">Give Review</h2>
+          <button
+            onClick={handleClose}
+            className="p-1 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Star Rating */}
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-sm font-semibold text-neutral-800">Give Rating</p>
+          <div className="flex items-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => setRating(star)}
+                onMouseEnter={() => setHovered(star)}
+                onMouseLeave={() => setHovered(0)}
+                className="transition-transform hover:scale-110"
+              >
+                <Star
+                  className="w-10 h-10 transition-colors"
+                  fill={star <= (hovered || rating) ? "#F59E0B" : "none"}
+                  stroke={star <= (hovered || rating) ? "#F59E0B" : "#D1D5DB"}
+                  strokeWidth={1.5}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Comment textarea */}
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Please share your thoughts about this book"
+          rows={6}
+          className="w-full resize-none border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-800 placeholder:text-neutral-400 bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+        />
+
+        {/* Submit */}
+        <Button
+          className="w-full"
+          onClick={handleSubmit}
+          isLoading={isPending}
+          disabled={rating === 0 || isPending}
+        >
+          Send
+        </Button>
+      </div>
+    </div>
+  );
+}
