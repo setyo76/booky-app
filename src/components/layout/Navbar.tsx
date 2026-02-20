@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   ChevronDown, ShoppingBag, LogOut, User,
-  BookOpen, Search, Menu, X
+  BookOpen, Search, Menu, X, Star
 } from "lucide-react";
 
 import { selectIsAuthenticated, selectUser, selectIsAdmin, logout } from "../../store/authSlice";
@@ -108,7 +108,12 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
                         </Link>
                         {!isAdmin && (
                           <Link to={ROUTES.MY_LOANS} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">
-                            <BookOpen className="w-4 h-4" /> My Loans
+                            <BookOpen className="w-4 h-4" /> Borrowed List
+                          </Link>
+                        )}
+                        {!isAdmin && (
+                          <Link to={ROUTES.MY_PROFILE + "?tab=reviews"} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">
+                            <Star className="w-4 h-4" /> Reviews
                           </Link>
                         )}
                         {isAdmin && (
@@ -211,7 +216,12 @@ export default function Navbar({ showSearch = true }: NavbarProps) {
                   </Link>
                   {!isAdmin && (
                     <Link to={ROUTES.MY_LOANS} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50">
-                      <BookOpen className="w-4 h-4" /> My Loans
+                      <BookOpen className="w-4 h-4" /> Borrowed List
+                    </Link>
+                  )}
+                  {!isAdmin && (
+                    <Link to={ROUTES.MY_PROFILE + "?tab=reviews"} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50">
+                      <Star className="w-4 h-4" /> Reviews
                     </Link>
                   )}
                   {isAdmin && (

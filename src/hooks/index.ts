@@ -314,6 +314,9 @@ export function useProfile() {
   return useQuery({
     queryKey: [QUERY_KEYS.PROFILE],
     queryFn: () => getProfile(),
+    // ✅ Response struktur: { success, data: { profile: {...}, loanStats, reviewsCount } }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select: (response: any) => response?.data?.profile ?? response?.data ?? response,
   });
 }
 

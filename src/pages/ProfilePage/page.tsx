@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User } from "lucide-react";
 import { toast } from "sonner";
+import { useSearchParams } from "react-router-dom"; // ✅ Pastikan ini terimport
 
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/shared/Button";
@@ -36,13 +37,22 @@ function ProfileRow({ label, value }: { label: string; value?: string }) {
 
 // ── Main page ─────────────────────────────────────────────────
 export default function ProfilePage() {
-  // ✅ activeTab dikelola di ProfilePage, bukan di ProfileTabs terpisah
-  const [activeTab, setActiveTab] = useState<TabId>("profile");
+  // ✅ Gunakan searchParams untuk mengelola tab
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Ambil tab dari URL (?tab=...), jika kosong default ke "profile"
+  const activeTab = (searchParams.get("tab") as TabId) || "profile";
+
+  // Fungsi untuk mengubah tab melalui URL
+  const handleTabChange = (id: TabId) => {
+    setSearchParams({ tab: id });
+  };
+
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState<UpdateProfileRequest>({});
 
   const { data, isLoading, isError, refetch } = useProfile();
-  const profile = data?.data;
+  const profile = data;
 
   const { mutate: updateProfile, isPending } = useUpdateProfile();
 
@@ -55,9 +65,7 @@ export default function ProfilePage() {
     setEditOpen(true);
   }
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
@@ -81,7 +89,7 @@ export default function ProfilePage() {
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)} // ✅ Sekarang merubah URL
               className={`flex-1 md:flex-none px-5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
                 activeTab === tab.id
                   ? "bg-white text-neutral-900 shadow-sm"
@@ -93,7 +101,8 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        {/* ── Tab: Profile ────────────────────────────────────── */}
+        {/* ── Isi Konten Berdasarkan Tab di URL ────────────────── */}
+        
         {activeTab === "profile" && (
           <>
             <h1 className="text-2xl font-bold text-neutral-900">Profile</h1>
@@ -105,10 +114,7 @@ export default function ProfilePage() {
                 <div className="w-16 h-16 rounded-full bg-neutral-200" />
                 <div className="flex flex-col gap-3 mt-2">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex justify-between py-2 border-b border-neutral-100"
-                    >
+                    <div key={i} className="flex justify-between py-2 border-b border-neutral-100">
                       <div className="h-3 w-24 bg-neutral-200 rounded-full" />
                       <div className="h-3 w-32 bg-neutral-200 rounded-full" />
                     </div>
@@ -120,15 +126,10 @@ export default function ProfilePage() {
 
             {!isLoading && !isError && profile && (
               <div className="border border-neutral-200 rounded-2xl p-5 flex flex-col gap-1 max-w-lg bg-white">
-                {/* Avatar + Role badge */}
                 <div className="flex items-center gap-4 mb-3">
                   <div className="w-16 h-16 rounded-full bg-neutral-200 flex items-center justify-center overflow-hidden shrink-0">
                     {profile.profilePhoto ? (
-                      <img
-                        src={profile.profilePhoto}
-                        alt={profile.name}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={profile.profilePhoto} alt={profile.name} className="w-full h-full object-cover" />
                     ) : (
                       <User className="w-8 h-8 text-neutral-400" />
                     )}
@@ -151,77 +152,32 @@ export default function ProfilePage() {
           </>
         )}
 
-        {/* ── Tab: Borrowed List ──────────────────────────────── */}
         {activeTab === "borrowed" && (
           <>
-            <h1 className="text-2xl font-bold text-neutral-900">
-              Borrowed List
-            </h1>
-            {/*
-              Jika kamu punya BorrowedListTab atau MyLoansPage content,
-              render di sini. Contoh:
-              <BorrowedListTab />
-            */}
-            <p className="text-sm text-neutral-400">
-              Konten borrowed list di sini.
-            </p>
+            <h1 className="text-2xl font-bold text-neutral-900">Borrowed List</h1>
+            <p className="text-sm text-neutral-400">Konten borrowed list di sini.</p>
           </>
         )}
 
-        {/* ── Tab: Reviews ✅ ─────────────────────────────────── */}
         {activeTab === "reviews" && <ReviewsTab />}
 
       </div>
 
       {/* ── Edit Profile Modal ────────────────────────────────── */}
-      <Modal
-        isOpen={editOpen}
-        onClose={() => setEditOpen(false)}
-        title="Update Profile"
-        size="sm"
-      >
+      <Modal isOpen={editOpen} onClose={() => setEditOpen(false)} title="Update Profile" size="sm">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <FormField label="Name">
-            <Input
-              name="name"
-              value={form.name ?? ""}
-              onChange={handleChange}
-              placeholder="Masukkan nama lengkap"
-            />
+            <Input name="name" value={form.name ?? ""} onChange={handleChange} placeholder="Masukkan nama lengkap" />
           </FormField>
-
           <FormField label="Nomor Handphone">
-            <Input
-              name="phone"
-              type="tel"
-              value={form.phone ?? ""}
-              onChange={handleChange}
-              placeholder="Contoh: 081234567890"
-            />
+            <Input name="phone" type="tel" value={form.phone ?? ""} onChange={handleChange} placeholder="Contoh: 081234567890" />
           </FormField>
-
           <FormField label="Bio (opsional)">
-            <Textarea
-              name="bio"
-              value={form.bio ?? ""}
-              onChange={handleChange}
-              placeholder="Ceritakan sedikit tentang dirimu..."
-              rows={3}
-            />
+            <Textarea name="bio" value={form.bio ?? ""} onChange={handleChange} placeholder="Ceritakan sedikit tentang dirimu..." rows={3} />
           </FormField>
-
           <div className="flex gap-3 pt-2">
-            <Button
-              type="button"
-              variant="secondary"
-              className="flex-1"
-              onClick={() => setEditOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button type="submit" className="flex-1" isLoading={isPending}>
-              Simpan
-            </Button>
+            <Button type="button" variant="secondary" className="flex-1" onClick={() => setEditOpen(false)}>Batal</Button>
+            <Button type="submit" className="flex-1" isLoading={isPending}>Simpan</Button>
           </div>
         </form>
       </Modal>
