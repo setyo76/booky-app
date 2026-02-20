@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { QUERY_KEYS, PAGINATION, TOAST_MESSAGES } from "../constants";
 import * as booksApi from "../api/booksApi";
 import * as loansApi from "../api/loansApi";
-import * as otherApis from "../api/otherApis";
+import * as otherApis from "../api/otherApi";
 import { BooksQueryParams, RecommendedBooksParams, Book } from "../types";
 import { getErrorMessage } from "../api/axiosClient";
 import { getProfile, updateProfile, getMyLoans, getMyReviews } from "../api/meApi";
@@ -73,14 +73,6 @@ export function useCategories() {
     queryKey: [QUERY_KEYS.CATEGORIES],
     queryFn: otherApis.getCategories,
     staleTime: 1000 * 60 * 30,
-  });
-}
-
-export function useAuthors(q?: string) {
-  return useQuery({
-    queryKey: [QUERY_KEYS.AUTHORS, q],
-    queryFn: () => otherApis.getAuthors(q ? { q } : undefined),
-    staleTime: 1000 * 60 * 10,
   });
 }
 
@@ -422,5 +414,23 @@ export function useBorrowFromCart() {
     onError: (error) => {
       toast.error(getErrorMessage(error) || TOAST_MESSAGES.BORROW_ERROR);
     },
+  });
+}
+
+// useDebounce (reusable hook)
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
+// useAuthors
+export function useAuthors() {
+  return useQuery({
+    queryKey: [QUERY_KEYS.AUTHORS],
+    queryFn: () => getAuthors(),
   });
 }
