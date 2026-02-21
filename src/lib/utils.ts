@@ -74,9 +74,54 @@ export function formatNumber(num: number) {
 // Image helpers
 // ============================================================
 export function getBookCoverUrl(coverImage?: string) {
+  // 1. Jika tidak ada gambar, kembalikan placeholder
   if (!coverImage) return "/placeholder-book.png";
-  if (coverImage.startsWith("http")) return coverImage;
-  return `https://library-backend-production-b9cf.up.railway.app${coverImage}`;
+  
+  // 2. Jika gambar adalah data URL (base64)
+  if (coverImage.startsWith('data:image')) {
+    return coverImage;
+  }
+  
+  // 3. Jika gambar adalah URL lengkap (http:// atau https://)
+  if (coverImage.startsWith('http://') || coverImage.startsWith('https://')) {
+    return coverImage;
+  }
+  
+  // 4. Jika gambar adalah path relatif, bangun URL lengkapnya
+  // Hapus '/api' dari base URL karena file statis biasanya di-serve dari root server yang sama.
+  const baseURL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'https://library-backend-production-b9cf.up.railway.app';
+  
+  // Pastikan path dimulai dengan slash (/)
+  const cleanPath = coverImage.startsWith('/') ? coverImage : `/${coverImage}`;
+  
+  return `${baseURL}${cleanPath}`;
+}
+
+// Optional: Versi dengan debug untuk troubleshooting
+export function getBookCoverUrlWithDebug(coverImage?: string) {
+  console.log('🔍 getBookCoverUrl input:', coverImage);
+  
+  if (!coverImage) {
+    console.log('❌ No cover image, using placeholder');
+    return "/placeholder-book.png";
+  }
+  
+  if (coverImage.startsWith('data:image')) {
+    console.log('✅ Base64 image detected');
+    return coverImage;
+  }
+  
+  if (coverImage.startsWith('http://') || coverImage.startsWith('https://')) {
+    console.log('✅ Full URL detected');
+    return coverImage;
+  }
+  
+  const baseURL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'https://library-backend-production-b9cf.up.railway.app';
+  const cleanPath = coverImage.startsWith('/') ? coverImage : `/${coverImage}`;
+  const fullUrl = `${baseURL}${cleanPath}`;
+  
+  console.log('✅ Constructed URL:', fullUrl);
+  return fullUrl;
 }
 
 // ============================================================

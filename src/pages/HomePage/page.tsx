@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { toast } from 'sonner';
@@ -38,26 +38,36 @@ export default function HomePage() {
   const books = data?.data?.books ?? [];
   const pagination = data?.data?.pagination;
   const hasMore = pagination ? page < pagination.totalPages : false;
-  const displayBooks = page === 1 ? books : [...allBooks, ...books];
 
-  function handleLoadMore() {
+  // ✅ Memoize display books to prevent unnecessary re-renders
+  const displayBooks = useMemo(() => {
+    return page === 1 ? books : [...allBooks, ...books];
+  }, [page, books, allBooks]);
+
+  // ✅ Memoize cart item IDs for faster lookup
+  const cartItemIds = useMemo(() => {
+    return new Set(cartItems.map(item => item.bookId));
+  }, [cartItems]);
+
+  // ✅ UseCallback for handlers to prevent function recreation
+  const handleLoadMore = useCallback(() => {
     setAllBooks(displayBooks);
     setPage((p) => p + 1);
-  }
+  }, [displayBooks]);
 
   const { mutate: borrowBook, isPending: isBorrowing } = useBorrowBook();
   const { mutate: addToCart } = useAddToCart();
   const { mutate: removeFromCart } = useRemoveFromCart();
 
-  function handleBorrow(book: Book) {
+  const handleBorrow = useCallback((book: Book) => {
     if (!isAuthenticated) {
       toast.error('Please login to borrow books.');
       return;
     }
     borrowBook(book.id);
-  }
+  }, [isAuthenticated, borrowBook]);
 
-  function handleCartToggle(book: Book) {
+  const handleCartToggle = useCallback((book: Book) => {
     if (!isAuthenticated) {
       toast.error('Please login to add books to cart.');
       return;
@@ -68,7 +78,19 @@ export default function HomePage() {
     } else {
       addToCart(book.id);
     }
-  }
+  }, [isAuthenticated, cartItems, removeFromCart, addToCart]);
+
+  // ✅ Track which book is being added to cart (for loading state)
+  const [loadingCartBookId, setLoadingCartBookId] = useState<number | null>(null);
+
+  const handleCartToggleWithLoading = useCallback(async (book: Book) => {
+    setLoadingCartBookId(book.id);
+    try {
+      await handleCartToggle(book);
+    } finally {
+      setLoadingCartBookId(null);
+    }
+  }, [handleCartToggle]);
 
   return (
     <MainLayout showSearch={true}>
@@ -98,15 +120,18 @@ export default function HomePage() {
             <>
               <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6'>
                 {displayBooks.map((book) => {
-                  // ✅ isInCart dihitung di parent dari cartItems yang sudah ada
-                  const isInCart = cartItems.some((item) => item.bookId === book.id);
+                  // ✅ Fast lookup using Set
+                  const isInCart = cartItemIds.has(book.id);
+                  const isCartLoading = loadingCartBookId === book.id;
+                  
                   return (
                     <BookCard
                       key={book.id}
                       book={book}
                       onBorrow={handleBorrow}
-                      onAddToCart={handleCartToggle}
+                      onAddToCart={handleCartToggleWithLoading}
                       isInCart={isInCart}
+                      isCartLoading={isCartLoading}
                       isBorrowing={isBorrowing}
                     />
                   );
@@ -135,3 +160,5 @@ export default function HomePage() {
     </MainLayout>
   );
 }
+
+
