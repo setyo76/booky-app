@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { User } from "lucide-react";
 import { toast } from "sonner";
-import { useSearchParams } from "react-router-dom"; // ✅ Pastikan ini terimport
+import { useSearchParams } from "react-router-dom";
 
 import MainLayout from "@/components/layout/MainLayout";
 import Button from "@/components/shared/Button";
@@ -9,12 +9,12 @@ import Modal from "@/components/shared/Modal";
 import { FormField, Input, Textarea } from "@/components/shared/FormField";
 import { ErrorState } from "@/components/shared/StateViews";
 import ReviewsTab from "@/pages/ProfilePage/components/ReviewsTab";
+import BorrowedListTab from "@/pages/ProfilePage/components/BorrowedListTab";
 
 import { useProfile, useUpdateProfile } from "@/hooks";
 import { TOAST_MESSAGES } from "@/constants";
 import { UpdateProfileRequest } from "@/types";
 
-// ── Tab type ──────────────────────────────────────────────────
 type TabId = "profile" | "borrowed" | "reviews";
 
 const TABS: { id: TabId; label: string }[] = [
@@ -23,7 +23,6 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "reviews", label: "Reviews" },
 ];
 
-// ── Profile info row ──────────────────────────────────────────
 function ProfileRow({ label, value }: { label: string; value?: string }) {
   return (
     <div className="flex items-center justify-between py-3.5 border-b border-neutral-100 last:border-0">
@@ -35,15 +34,10 @@ function ProfileRow({ label, value }: { label: string; value?: string }) {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────
 export default function ProfilePage() {
-  // ✅ Gunakan searchParams untuk mengelola tab
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  // Ambil tab dari URL (?tab=...), jika kosong default ke "profile"
   const activeTab = (searchParams.get("tab") as TabId) || "profile";
 
-  // Fungsi untuk mengubah tab melalui URL
   const handleTabChange = (id: TabId) => {
     setSearchParams({ tab: id });
   };
@@ -84,12 +78,12 @@ export default function ProfilePage() {
     <MainLayout showSearch={false}>
       <div className="page-container py-6 md:py-10 flex flex-col gap-6">
 
-        {/* ── Tab Navigation ──────────────────────────────────── */}
+        {/* Tab Navigation */}
         <div className="flex items-center bg-neutral-100 rounded-xl p-1 gap-1 w-full md:w-fit">
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => handleTabChange(tab.id)} // ✅ Sekarang merubah URL
+              onClick={() => handleTabChange(tab.id)}
               className={`flex-1 md:flex-none px-5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
                 activeTab === tab.id
                   ? "bg-white text-neutral-900 shadow-sm"
@@ -101,8 +95,7 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        {/* ── Isi Konten Berdasarkan Tab di URL ────────────────── */}
-        
+        {/* Tab: Profile */}
         {activeTab === "profile" && (
           <>
             <h1 className="text-2xl font-bold text-neutral-900">Profile</h1>
@@ -135,7 +128,7 @@ export default function ProfilePage() {
                     )}
                   </div>
                   <span className="text-xs font-bold px-3 py-1 rounded-full bg-neutral-100 text-neutral-600 uppercase tracking-widest">
-                    {(profile as any).role ?? 'USER'}
+                    {(profile as any).role ?? "USER"}
                   </span>
                 </div>
 
@@ -152,18 +145,20 @@ export default function ProfilePage() {
           </>
         )}
 
+        {/* Tab: Borrowed List ✅ */}
         {activeTab === "borrowed" && (
           <>
             <h1 className="text-2xl font-bold text-neutral-900">Borrowed List</h1>
-            <p className="text-sm text-neutral-400">Konten borrowed list di sini.</p>
+            <BorrowedListTab />
           </>
         )}
 
+        {/* Tab: Reviews */}
         {activeTab === "reviews" && <ReviewsTab />}
 
       </div>
 
-      {/* ── Edit Profile Modal ────────────────────────────────── */}
+      {/* Edit Profile Modal */}
       <Modal isOpen={editOpen} onClose={() => setEditOpen(false)} title="Update Profile" size="sm">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <FormField label="Name">

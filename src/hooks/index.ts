@@ -121,7 +121,7 @@ export function useOverdueLoans() {
 }
 
 // ============================================================
-// BORROW MUTATION — with Optimistic UI
+// BORROW MUTATION — with Optimistic UI + Cart Sync
 // ============================================================
 
 export function useBorrowBook() {
@@ -178,27 +178,26 @@ export function useBorrowBook() {
       return { previousBook };
     },
 
-    onSuccess: (_, bookId) => {
+    onSuccess: async (_, bookId) => {
       toast.success(TOAST_MESSAGES.BORROW_SUCCESS);
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LOANS_MY] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOOKS] });
 
-      const cartData = queryClient.getQueryData<{
-        data: { items: { id: number; bookId: number }[] };
-      }>([QUERY_KEYS.CART]);
-
-      const cartItem = cartData?.data?.items?.find(
-        (item) => item.bookId === bookId
-      );
-
-      if (cartItem) {
-        cartApi.removeFromCart(cartItem.id).then(() => {
-          queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
-        }).catch(() => {
-          queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
-        });
-      } else {
-        queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
+      // ✅ Selalu fetch cart terbaru dari server, lalu hapus item yang cocok
+      try {
+        const freshCart = await cartApi.getCart();
+        const cartItem = freshCart?.data?.items?.find(
+          (item) => item.bookId === bookId
+        );
+        if (cartItem) {
+          await cartApi.removeFromCart(cartItem.id);
+        }
+      } catch {
+        // Jika gagal, tetap lanjut
+      } finally {
+        // Paksa invalidate + refetch agar badge angka langsung update
+        await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
+        queryClient.refetchQueries({ queryKey: [QUERY_KEYS.CART] });
       }
     },
 
@@ -350,7 +349,7 @@ export function useCart() {
   return useQuery({
     queryKey: [QUERY_KEYS.CART],
     queryFn: cartApi.getCart,
-    staleTime: 1000 * 60,
+    staleTime: 0, // ✅ Selalu fresh agar badge angka selalu akurat
   });
 }
 

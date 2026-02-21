@@ -17,21 +17,16 @@ import {
 
 /**
  * POST /api/reviews — Create or Update review
- * Memastikan data dikirim dalam format yang diminta backend (Number)
+ * API expects: { bookId: number, star: number, comment: string }
  */
 export async function createReview(
   data: CreateReviewRequest
 ): Promise<ApiResponse<{ review: Review }>> {
-  
-  // ✅ PAKSA konversi ke number di sini sebagai pertahanan terakhir
-  const payload = {
-    bookId: Number(data.bookId),
-    star: Number(data.star),
-    comment: data.comment || ""
-  };
-
-  // Log ini untuk kamu cek di console, pastikan tidak ada tanda kutip di angkanya
-  console.log("Payload Final ke API:", payload);
+ const payload = {
+  bookId: Number(data.bookId),
+  star: Number(data.star ?? (data as any).rating), 
+  comment: data.comment || ""
+};
 
   const response = await axiosClient.post<ApiResponse<{ review: Review }>>(
     "/reviews",
@@ -49,7 +44,7 @@ export async function getBookReviews(params?: {
   limit?: number;
 }): Promise<ReviewsResponse> {
   const { bookId, ...rest } = params ?? {};
-  
+
   if (!bookId) throw new Error("bookId is required");
 
   const response = await axiosClient.get<ReviewsResponse>(
@@ -73,7 +68,7 @@ export async function getMyReviews(params?: {
 }
 
 // ============================================================
-// CATEGORIES, AUTHORS, & PROFILE (Tetap sama)
+// CATEGORIES
 // ============================================================
 
 export async function getCategories(): Promise<ApiResponse<{ categories: Category[] }>> {
@@ -95,6 +90,10 @@ export async function deleteCategory(id: number): Promise<ApiResponse<null>> {
   const response = await axiosClient.delete(`/categories/${id}`);
   return response.data;
 }
+
+// ============================================================
+// AUTHORS
+// ============================================================
 
 export async function getAuthors(params?: { q?: string }): Promise<ApiResponse<{ authors: Author[] }>> {
   const response = await axiosClient.get("/authors", { params });
@@ -126,6 +125,10 @@ export async function deleteAuthor(id: number): Promise<ApiResponse<null>> {
   return response.data;
 }
 
+// ============================================================
+// PROFILE
+// ============================================================
+
 export async function getMyProfile(): Promise<ApiResponse<UserProfile>> {
   const response = await axiosClient.get("/me");
   return response.data;
@@ -141,13 +144,6 @@ export async function getAdminUsers(params?: { search?: string; page?: number; l
   return response.data;
 }
 
+// Alias untuk hooks
 export async function getProfile() { return getMyProfile(); }
 export async function updateProfile(data: UpdateProfileRequest) { return updateMyProfile(data); }
-
-export const returnBook = async (loanId: number) => {
-  // Menggunakan axiosInstance yang sudah membawa token di header
-  const response = await axiosInstance.patch(`/loans/${loanId}/return`);
-  return response.data;
-};
-
-import axiosInstance from "./axiosClient";

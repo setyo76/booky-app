@@ -3,7 +3,7 @@ import { User } from "lucide-react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { useBookReviews, useCreateReview, useDeleteReview } from "@/hooks";
+import { useBookReviews, useCreateReview, useDeleteReview, useMyLoans } from "@/hooks";
 import { selectIsAuthenticated, selectUser } from "@/store/authSlice";
 import { StarRatingDisplay, StarRatingInput } from "@/components/shared/StarRating";
 import Button from "@/components/shared/Button";
@@ -41,11 +41,22 @@ export default function ReviewSection({
   const [starValue, setStarValue] = useState(0);
   const [comment, setComment] = useState("");
 
-  // Fix: pass bookId and page as separate args (not as object)
-  const { data, isLoading } = useBookReviews(bookId, page);
+  const { data, isLoading } = useBookReviews(bookId, { page });
   const reviews = data?.data?.reviews ?? [];
   const pagination = data?.data?.pagination;
   const hasMore = pagination ? page < pagination.totalPages : false;
+
+  // ✅ Ambil semua loan user, cek apakah ada yang RETURNED untuk buku ini
+  const { data: loansData } = useMyLoans({ limit: 100 });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const myLoans: any[] = loansData?.data?.loans ?? loansData?.data ?? [];
+  const canReview =
+    isAuthenticated &&
+    Array.isArray(myLoans) &&
+    myLoans.some(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (loan: any) => loan.book?.id === bookId && loan.status === "RETURNED"
+    );
 
   const { mutate: createReview, isPending: isSubmitting } = useCreateReview();
   const { mutate: deleteReview } = useDeleteReview();
@@ -57,10 +68,9 @@ export default function ReviewSection({
       return;
     }
     createReview(
-      { bookId, rating: starValue, comment },
+      { bookId, star: starValue, comment },
       {
         onSuccess: () => {
-          toast.success(TOAST_MESSAGES.REVIEW_SUCCESS);
           setStarValue(0);
           setComment("");
           setShowForm(false);
@@ -90,15 +100,23 @@ export default function ReviewSection({
           </div>
         </div>
 
-        {isAuthenticated && !showForm && (
+        {/* ✅ Hanya tampil jika user punya loan RETURNED untuk buku ini */}
+        {canReview && !showForm && (
           <Button variant="secondary" size="sm" onClick={() => setShowForm(true)}>
             Tulis Review
           </Button>
         )}
       </div>
 
+      {/* Info untuk user yang belum bisa review */}
+      {isAuthenticated && !canReview && (
+        <p className="text-xs text-neutral-400 font-medium italic">
+          Kamu hanya bisa menulis review untuk buku yang sudah dikembalikan.
+        </p>
+      )}
+
       {/* Review form */}
-      {isAuthenticated && showForm && (
+      {canReview && showForm && (
         <form
           onSubmit={handleSubmitReview}
           className="flex flex-col gap-4 p-4 border border-neutral-200 rounded-xl bg-neutral-50"
@@ -152,7 +170,10 @@ export default function ReviewSection({
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {reviews.map((review) => (
-              <div key={review.id} className="flex flex-col gap-2 p-4 rounded-xl border border-neutral-100 bg-white">
+              <div
+                key={review.id}
+                className="flex flex-col gap-2 p-4 rounded-xl border border-neutral-100 bg-white"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-9 h-9 rounded-full bg-neutral-200 flex items-center justify-center shrink-0">

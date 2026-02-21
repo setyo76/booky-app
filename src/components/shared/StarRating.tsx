@@ -18,6 +18,9 @@ export function StarRatingDisplay({
   showCount = true,
   className,
 }: StarRatingDisplayProps) {
+  // ✅ Fallback ke 0 jika rating undefined/null
+  const safeRating = rating ?? 0;
+
   const sizes = {
     sm: "w-3 h-3",
     md: "w-4 h-4",
@@ -34,8 +37,8 @@ export function StarRatingDisplay({
     <div className={cn("flex items-center gap-1", className)}>
       <div className="flex items-center gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => {
-          const filled = i < Math.floor(rating);
-          const partial = !filled && i < rating;
+          const filled = i < Math.floor(safeRating);
+          const partial = !filled && i < safeRating;
 
           return (
             <div key={i} className="relative">
@@ -45,7 +48,7 @@ export function StarRatingDisplay({
               {(filled || partial) && (
                 <div
                   className="absolute inset-0 overflow-hidden"
-                  style={{ width: partial ? `${(rating % 1) * 100}%` : "100%" }}
+                  style={{ width: partial ? `${(safeRating % 1) * 100}%` : "100%" }}
                 >
                   <Star
                     className={cn(sizes[size], "text-accent-yellow fill-accent-yellow")}
@@ -58,7 +61,7 @@ export function StarRatingDisplay({
       </div>
 
       <span className={cn("font-semibold text-neutral-900", textSizes[size])}>
-        {rating.toFixed(1)}
+        {safeRating.toFixed(1)}
       </span>
 
       {showCount && reviewCount !== undefined && (

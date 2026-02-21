@@ -15,7 +15,6 @@ interface LoanCardProps {
   loan: Loan;
 }
 
-// ✅ Ambil nilai tanggal dengan fallback ke semua kemungkinan nama field
 function getDateValue(loan: Loan, field: "dueDate" | "borrowDate"): string {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const raw = loan as any;
@@ -84,6 +83,9 @@ export default function LoanCard({ loan }: LoanCardProps) {
   const displayStatus = isOverdue ? "OVERDUE" : loan.status;
   const duration = getDuration(borrowDate, dueDate);
 
+  // ✅ Tombol review hanya muncul untuk buku yang sudah dikembalikan
+  const canReview = loan.status === "RETURNED";
+
   function handleSubmitReview(e: React.FormEvent) {
     e.preventDefault();
     if (!book || starValue === 0) {
@@ -91,7 +93,7 @@ export default function LoanCard({ loan }: LoanCardProps) {
       return;
     }
     createReview(
-      { bookId: book.id, rating: starValue, comment },
+      { bookId: book.id, star: starValue, comment },
       {
         onSuccess: () => {
           toast.success(TOAST_MESSAGES.REVIEW_SUCCESS);
@@ -174,27 +176,31 @@ export default function LoanCard({ loan }: LoanCardProps) {
           </p>
         </div>
 
-        {/* Give Review button — desktop */}
-        <div className="hidden md:block shrink-0">
-          <Button
-            size="sm"
-            onClick={() => setShowReviewForm((v) => !v)}
-            className="whitespace-nowrap"
-          >
+        {/* ✅ Give Review button — desktop, hanya jika RETURNED */}
+        {canReview && (
+          <div className="hidden md:block shrink-0">
+            <Button
+              size="sm"
+              onClick={() => setShowReviewForm((v) => !v)}
+              className="whitespace-nowrap"
+            >
+              {showReviewForm ? "Tutup" : "Give Review"}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* ✅ Give Review button — mobile, hanya jika RETURNED */}
+      {canReview && (
+        <div className="md:hidden px-4 pb-4">
+          <Button className="w-full" onClick={() => setShowReviewForm((v) => !v)}>
             {showReviewForm ? "Tutup" : "Give Review"}
           </Button>
         </div>
-      </div>
+      )}
 
-      {/* Give Review button — mobile */}
-      <div className="md:hidden px-4 pb-4">
-        <Button className="w-full" onClick={() => setShowReviewForm((v) => !v)}>
-          {showReviewForm ? "Tutup" : "Give Review"}
-        </Button>
-      </div>
-
-      {/* ── Review form (inline) ── */}
-      {showReviewForm && (
+      {/* ── Review form — hanya jika RETURNED & form terbuka ── */}
+      {canReview && showReviewForm && (
         <form
           onSubmit={handleSubmitReview}
           className="flex flex-col gap-3 px-4 pb-4 pt-2 border-t border-neutral-100 bg-neutral-50/60"
