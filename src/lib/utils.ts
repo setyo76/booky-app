@@ -74,30 +74,30 @@ export function formatNumber(num: number) {
 // Image helpers
 // ============================================================
 export function getBookCoverUrl(coverImage?: string) {
-  // 1. Jika tidak ada gambar, kembalikan placeholder
+  // 1. If there is no image, return the placeholder.
   if (!coverImage) return "/placeholder-book.png";
   
-  // 2. Jika gambar adalah data URL (base64)
+  // 2. If image is URL data (base64)
   if (coverImage.startsWith('data:image')) {
     return coverImage;
   }
   
-  // 3. Jika gambar adalah URL lengkap (http:// atau https://)
+  // 3. If image is a full URL (http:// or https://)
   if (coverImage.startsWith('http://') || coverImage.startsWith('https://')) {
     return coverImage;
   }
   
-  // 4. Jika gambar adalah path relatif, bangun URL lengkapnya
-  // Hapus '/api' dari base URL karena file statis biasanya di-serve dari root server yang sama.
+  // 4. If image is a relative path, build the full URL
+  // Remove '/api' from the base URL as static files are usually served from the same server root.
   const baseURL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'https://library-backend-production-b9cf.up.railway.app';
   
-  // Pastikan path dimulai dengan slash (/)
+  //Make sure the path starts with a slash (/)
   const cleanPath = coverImage.startsWith('/') ? coverImage : `/${coverImage}`;
   
   return `${baseURL}${cleanPath}`;
 }
 
-// Optional: Versi dengan debug untuk troubleshooting
+// Optional: Version with debug for troubleshooting
 export function getBookCoverUrlWithDebug(coverImage?: string) {
   console.log('🔍 getBookCoverUrl input:', coverImage);
   

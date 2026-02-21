@@ -16,6 +16,8 @@ export const ROUTES = {
   MY_LOANS: "/my-loans",
   MY_PROFILE: "/profile",
   CART: "/cart",
+  AUTHORS: "/authors",
+  AUTHOR_DETAIL: "/authors/:id",
   ADMIN: "/admin",
   ADMIN_BOOKS: "/admin/books",
   ADMIN_LOANS: "/admin/loans",
@@ -26,19 +28,38 @@ export const ROUTES = {
 // REACT QUERY KEYS
 // ============================================================
 export const QUERY_KEYS = {
+  // Books
   BOOKS: "books",
-  BOOK_DETAIL: "book",
+  BOOK_DETAIL: "book-detail",
   BOOKS_RECOMMENDED: "books-recommended",
-  CATEGORIES: "categories",
+  ADMIN_BOOKS: "admin-books",
+  
+  // Authors
   AUTHORS: "authors",
+  AUTHORS_LIST: "authors-list",
+  AUTHOR_DETAIL: "author-detail",
+  AUTHOR_BOOKS: "author-books",
+  POPULAR_AUTHORS: "popular-authors",
+  
+  // Categories
+  CATEGORIES: "categories",
+  
+  // Loans
   LOANS_MY: "loans-my",
   LOANS_ADMIN: "loans-admin",
   LOANS_OVERDUE: "loans-overdue",
+  
+  // Reviews
   REVIEWS_BOOK: "reviews-book",
   REVIEWS_MY: "reviews-my",
+  
+  // Profile
   PROFILE: "profile",
+  
+  // Cart
   CART: "cart",
-  ADMIN_BOOKS: "admin-books",
+  
+  // Users
   ADMIN_USERS: "admin-users",
 } as const;
 
@@ -58,6 +79,7 @@ export const PAGINATION = {
   DEFAULT_LIMIT: 12,
   RECOMMENDED_LIMIT: 8,
   REVIEWS_LIMIT: 10,
+  AUTHORS_LIMIT: 50,
 } as const;
 
 // ============================================================
