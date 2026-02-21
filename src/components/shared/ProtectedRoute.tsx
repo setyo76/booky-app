@@ -11,8 +11,7 @@ export default function ProtectedRoute({ adminOnly = false }: ProtectedRouteProp
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const location = useLocation();
 
-  // 1. 
-If not authenticated, throw to login
+  // 1. If not authenticated, throw to login
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

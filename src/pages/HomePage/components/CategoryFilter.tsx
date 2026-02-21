@@ -1,23 +1,21 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import { useCategories } from "@/hooks";
-import { setSelectedCategory } from "@/store/uiSlice";
-import { selectSelectedCategoryId } from "@/store/uiSlice";
+import { setSelectedCategory, selectSelectedCategoryId } from "@/store/uiSlice";
+import { Category } from "@/types";
 
-// Category emoji map (fallback jika tidak ada icon dari API)
 const CATEGORY_EMOJI: Record<string, string> = {
-  "fiction":          "✏️",
-  "non-fiction":      "📘",
+  "fiction": "✏️",
+  "non-fiction": "📋",
   "self-improvement": "🌱",
-  "finance":          "💰",
-  "science":          "🔬",
-  "education":        "📚",
-  "technology":       "💻",
-  "history":          "🏛️",
-  "biography":        "👤",
-  "mystery":          "🔍",
-  "romance":          "❤️",
-  "default":          "📖",
+  "finance": "💰",
+  "science": "🔬",
+  "science-fiction": "🔭",
+  "science-&-technology": "🔬",
+  "education": "📚",
+  "technology": "💻",
+  "default": "📖",
 };
 
 function getCategoryEmoji(name: string): string {
@@ -30,22 +28,65 @@ export default function CategoryFilter() {
   const navigate = useNavigate();
   const selectedId = useSelector(selectSelectedCategoryId);
   const { data, isLoading } = useCategories();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const categories = data?.data?.categories ?? [];
+  const categories: Category[] = data?.data?.categories ?? [];
+
+  // ── Logika Auto-Scroll Otomatis ──────────────────────────────
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer || categories.length === 0) return;
+
+    let scrollAmount = 0;
+    const step = 1; // Kecepatan scroll (pixel per frame)
+    
+    const scrollInterval = setInterval(() => {
+      if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth) {
+        // Reset ke awal jika sudah di ujung
+        scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+        scrollAmount = 0;
+      } else {
+        scrollContainer.scrollLeft += step;
+        scrollAmount += step;
+      }
+    }, 30); // Kehalusan gerakan (ms)
+
+    // Berhenti scroll saat user menyentuh/hover agar tidak mengganggu interaksi
+    scrollContainer.addEventListener('mouseenter', () => clearInterval(scrollInterval));
+    
+    return () => {
+      clearInterval(scrollInterval);
+      scrollContainer.removeEventListener('mouseenter', () => clearInterval(scrollInterval));
+    };
+  }, [categories]);
 
   if (isLoading) {
     return (
-      <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-thin">
+      <div className="flex gap-4 overflow-hidden pb-1">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="shrink-0 w-24 h-24 md:w-28 md:h-28 rounded-xl bg-neutral-100 animate-pulse" />
+          <div key={i} className="shrink-0 w-[110px] h-[120px] rounded-2xl bg-neutral-100 animate-pulse" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-3 md:flex md:flex-row gap-3 md:overflow-x-auto md:pb-1 md:scrollbar-thin">
-      {categories.map((cat: import("@/types").Category) => {
+    <div 
+      ref={scrollRef}
+      className="flex gap-4 overflow-x-auto pb-4 no-scrollbar" 
+      style={{ 
+        msOverflowStyle: 'none',  /* IE and Edge */
+        scrollbarWidth: 'none',   /* Firefox */
+      }}
+    >
+      {/* Tambahkan CSS global atau inline untuk Chrome/Safari Hide Scrollbar */}
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
+
+      {categories.map((cat) => {
         const isActive = selectedId === cat.id;
         return (
           <button
@@ -55,27 +96,27 @@ export default function CategoryFilter() {
               navigate("/books/list");
             }}
             className={`
-              flex flex-col items-center justify-center gap-2
-              rounded-xl p-3 md:p-4
-              min-w-[80px] md:min-w-[100px]
-              border transition-all duration-150
+              shrink-0 flex flex-col items-center
+              p-3 gap-3 rounded-[16px] w-[110px] md:w-[125px]
+              border transition-all duration-200 shadow-sm
               ${isActive
-                ? "bg-primary/10 border-primary"
-                : "bg-neutral-50 border-neutral-200 hover:border-primary/40 hover:bg-primary/5"
+                ? "bg-white border-primary ring-1 ring-primary"
+                : "bg-white border-neutral-100 hover:border-primary/30 hover:shadow-md"
               }
             `}
           >
-            {/* Icon */}
-            <div className={`
-              w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-xl md:text-2xl
-              ${isActive ? "bg-primary/10" : "bg-white shadow-sm"}
-            `}>
-              {getCategoryEmoji(cat.name)}
+            <div
+              className="w-full aspect-[16/9] rounded-xl flex items-center justify-center text-2xl shadow-inner"
+              style={{ backgroundColor: "#E0ECFF" }}
+            >
+              <span className="filter drop-shadow-sm">
+                {getCategoryEmoji(cat.name)}
+              </span>
             </div>
-            {/* Label */}
+
             <span className={`
-              text-xs font-semibold text-center leading-tight line-clamp-2
-              ${isActive ? "text-primary" : "text-neutral-700"}
+              text-[12px] font-bold text-center leading-tight line-clamp-1 w-full
+              ${isActive ? "text-primary" : "text-[#171717]"}
             `}>
               {cat.name}
             </span>

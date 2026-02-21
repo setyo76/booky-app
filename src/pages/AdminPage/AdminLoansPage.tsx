@@ -18,7 +18,7 @@ const STATUS_PILLS: { label: string; value: StatusFilter }[] = [
   { label: "Semua", value: "ALL" },
   { label: "Aktif", value: "BORROWED" },
   { label: "Kembali", value: "RETURNED" },
-  { label: "Terlambat", value: "OVERDUE" },
+  { label: "Terlambat", value: "overdue" },
 ];
 
 function formatDate(d?: string) {
