@@ -1,5 +1,15 @@
 import axiosClient from "./axiosClient";
 
+// ── Status mapping: Redux format → API format ─────────────────
+// API menerima: all | active | returned | overdue
+// AdminLoansPage menggunakan: ALL | BORROWED | RETURNED | overdue
+const STATUS_MAP: Record<string, string> = {
+  ALL: "all",
+  BORROWED: "active",
+  RETURNED: "returned",
+  overdue: "overdue",
+};
+
 // ── Admin Overview ────────────────────────────────────────────
 export async function getAdminOverview() {
   const res = await axiosClient.get("/admin/overview");
@@ -24,8 +34,6 @@ export async function createBook(data: FormData) {
 }
 
 export async function updateBook(id: number, data: FormData) {
-  // 🔄 Penyesuaian Swagger: Endpoint update buku biasanya di /books/{id}
-  // Jika di Swagger tertulis PATCH /api/books/{id}, maka hapus "/admin"
   const res = await axiosClient.patch(`/books/${id}`, data, {
     headers: { "Content-Type": "multipart/form-data" },
   });
@@ -33,7 +41,6 @@ export async function updateBook(id: number, data: FormData) {
 }
 
 export async function deleteBook(id: number) {
-  // ✅ Sudah benar sesuai Swagger: DELETE /books/{id}
   const res = await axiosClient.delete(`/books/${id}`);
   return res.data;
 }
@@ -45,7 +52,18 @@ export async function getAdminLoans(params?: {
   page?: number;
   limit?: number;
 }) {
-  const res = await axiosClient.get("/admin/loans", { params });
+  const mappedStatus = params?.status
+    ? (STATUS_MAP[params.status] ?? params.status.toLowerCase())
+    : "all";
+
+  const formattedParams = {
+    q: params?.q,
+    status: mappedStatus,
+    page: params?.page ?? 1,
+    limit: params?.limit ?? 15,
+  };
+
+  const res = await axiosClient.get("/admin/loans", { params: formattedParams });
   return res.data;
 }
 
@@ -57,13 +75,19 @@ export async function getOverdueLoans(params?: {
   return res.data;
 }
 
-export async function createLoan(data: { userId: number; bookId: number; dueDate?: string }) {
+export async function createLoan(data: {
+  userId: number;
+  bookId: number;
+  dueDate?: string;
+}) {
   const res = await axiosClient.post("/admin/loans", data);
   return res.data;
 }
 
-export async function updateLoan(loanId: number, data: { status?: string; dueAt?: string }) {
-  // ✅ Sudah benar sesuai Swagger: PATCH /admin/loans/{id}
+export async function updateLoan(
+  loanId: number,
+  data: { status?: string; dueAt?: string }
+) {
   const res = await axiosClient.patch(`/admin/loans/${loanId}`, data);
   return res.data;
 }
@@ -82,20 +106,21 @@ export async function getAdminUsers(params?: {
   return res.data;
 }
 
-// ⚠️ Catatan: Pastikan endpoint DELETE /admin/users/{id} memang ada di backend 
-// karena tidak terlihat eksplisit di potongan gambar Swagger Anda.
 export async function deleteUser(id: number) {
   const res = await axiosClient.delete(`/admin/users/${id}`);
   return res.data;
 }
 
-// ── Authors (admin) ───────────────────────────────────────────
+// ── Authors & Categories (admin) ─────────────────────────────
 export async function createAuthor(data: { name: string; bio?: string }) {
   const res = await axiosClient.post("/authors", data);
   return res.data;
 }
 
-export async function updateAuthor(id: number, data: { name?: string; bio?: string }) {
+export async function updateAuthor(
+  id: number,
+  data: { name?: string; bio?: string }
+) {
   const res = await axiosClient.put(`/authors/${id}`, data);
   return res.data;
 }
@@ -105,7 +130,6 @@ export async function deleteAuthor(id: number) {
   return res.data;
 }
 
-// ── Categories (admin) ────────────────────────────────────────
 export async function createCategory(data: { name: string }) {
   const res = await axiosClient.post("/categories", data);
   return res.data;

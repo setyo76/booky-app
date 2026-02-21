@@ -11,16 +11,16 @@ export default function ProtectedRoute({ adminOnly = false }: ProtectedRouteProp
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const location = useLocation();
 
+  // 1. Jika tidak terautentikasi, lempar ke login
   if (!isAuthenticated) {
-    // Jika belum login, tendang ke login page
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // 2. Jika butuh admin tapi user adalah member biasa, lempar ke home user
   if (adminOnly && user?.role !== "ADMIN") {
-    // Jika butuh admin tapi user bukan admin, tendang ke home
     return <Navigate to="/" replace />;
   }
 
-  // Jika semua ok, render anak route-nya (Outlet)
+  // 3. Jika ok, render konten di dalamnya
   return <Outlet />;
 }

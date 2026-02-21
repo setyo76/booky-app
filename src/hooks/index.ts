@@ -1,4 +1,8 @@
 import {
+  useState,
+  useEffect,
+} from "react";
+import {
   useQuery,
   useMutation,
   useQueryClient,
@@ -81,6 +85,13 @@ export function usePopularAuthors() {
     queryKey: [QUERY_KEYS.AUTHORS, "popular"],
     queryFn: otherApis.getPopularAuthors,
     staleTime: 1000 * 60 * 10,
+  });
+}
+
+export function useAuthors() {
+  return useQuery({
+    queryKey: [QUERY_KEYS.AUTHORS],
+    queryFn: otherApis.getAuthors,
   });
 }
 
@@ -172,8 +183,6 @@ export function useBorrowBook() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LOANS_MY] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOOKS] });
 
-      // ✅ Cek apakah buku ini ada di server cart — jika ada, hapus manual
-      // karena backend tidak otomatis menghapus cart item saat borrow langsung
       const cartData = queryClient.getQueryData<{
         data: { items: { id: number; bookId: number }[] };
       }>([QUERY_KEYS.CART]);
@@ -183,11 +192,9 @@ export function useBorrowBook() {
       );
 
       if (cartItem) {
-        // Hapus dari server cart lalu invalidate
         cartApi.removeFromCart(cartItem.id).then(() => {
           queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
         }).catch(() => {
-          // Jika hapus gagal, tetap invalidate agar UI sync
           queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
         });
       } else {
@@ -306,7 +313,6 @@ export function useProfile() {
   return useQuery({
     queryKey: [QUERY_KEYS.PROFILE],
     queryFn: () => getProfile(),
-    // ✅ Response struktur: { success, data: { profile: {...}, loanStats, reviewsCount } }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     select: (response: any) => response?.data?.profile ?? response?.data ?? response,
   });
@@ -417,20 +423,17 @@ export function useBorrowFromCart() {
   });
 }
 
-// useDebounce (reusable hook)
+// ============================================================
+// UTILITY HOOKS
+// ============================================================
+
 export function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
+  const [debounced, setDebounced] = useState<T>(value);
+
   useEffect(() => {
     const t = setTimeout(() => setDebounced(value), delay);
     return () => clearTimeout(t);
   }, [value, delay]);
-  return debounced;
-}
 
-// useAuthors
-export function useAuthors() {
-  return useQuery({
-    queryKey: [QUERY_KEYS.AUTHORS],
-    queryFn: () => getAuthors(),
-  });
+  return debounced;
 }

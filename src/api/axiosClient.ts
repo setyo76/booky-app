@@ -1,11 +1,11 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://library-backend-production-b9cf.up.railway.app/api",
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 30000, // ← naikkan dari 15000 ke 30000
+  timeout: 30000,
 });
 
 axiosClient.interceptors.request.use((config) => {
