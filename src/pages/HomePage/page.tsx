@@ -15,7 +15,7 @@ import { EmptySearch, ErrorState } from '@/components/shared/StateViews';
 import { useRecommendedBooks, useBorrowBook, useCart } from '@/hooks';
 import { selectSelectedCategoryId, selectSearchQuery } from '@/store/uiSlice';
 import { selectIsAuthenticated } from '@/store/authSlice';
-import { selectIsInCart, addItem, removeItem } from '@/store/cartSlice';
+import { addItem, removeItem } from '@/store/cartSlice';
 import { Book } from '@/types';
 import { TOAST_MESSAGES } from '@/constants';
 
@@ -54,7 +54,7 @@ export default function HomePage() {
 
   function handleBorrow(book: Book) {
     if (!isAuthenticated) {
-      toast.error('Silakan login untuk meminjam buku.');
+      toast.error('Please login to borrow books.');
       return;
     }
     borrowBook(book.id);
@@ -89,7 +89,7 @@ export default function HomePage() {
               to="/books/list"
               className="text-sm font-semibold text-primary hover:underline"
             >
-              Lihat Semua
+              View All
             </Link>
           </div>
 

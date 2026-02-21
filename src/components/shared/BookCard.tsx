@@ -14,7 +14,7 @@ interface BookCardProps {
   onBorrow?: (book: Book) => void;
   onAddToCart?: (book: Book) => void;
   isInCart?: boolean;
-  isCartLoading?: boolean; // ✅ tambahan: loading state saat add/remove cart
+  isCartLoading?: boolean; // ✅ additional: loading state when add/remove cart
   isBorrowing?: boolean;
 }
 

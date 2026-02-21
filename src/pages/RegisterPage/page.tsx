@@ -32,31 +32,31 @@ function validate(values: FormValues): FormErrors {
   const errors: FormErrors = {};
 
   if (!values.name.trim()) {
-    errors.name = "Nama wajib diisi.";
+    errors.name = "Name is required.";
   } else if (values.name.trim().length < 2) {
-    errors.name = "Nama minimal 2 karakter.";
+    errors.name = "Name must be at least 2 characters long.";
   }
 
   if (!values.email) {
-    errors.email = "Email wajib diisi.";
+    errors.email = "Email is required.";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    errors.email = "Format email tidak valid.";
+    errors.email = "Invalid email format.";
   }
 
   if (values.phone && !/^[0-9]{8,20}$/.test(values.phone)) {
-    errors.phone = "Nomor handphone 8–20 digit angka.";
+    errors.phone = "Phone number must be 8–20 digits long.";
   }
 
   if (!values.password) {
-    errors.password = "Password wajib diisi.";
+    errors.password = "Password is required.";
   } else if (values.password.length < 6) {
-    errors.password = "Password minimal 6 karakter.";
+    errors.password = "Password must be at least 6 characters long.";
   }
 
   if (!values.confirmPassword) {
-    errors.confirmPassword = "Konfirmasi password wajib diisi.";
+    errors.confirmPassword = "Confirm password is required.";
   } else if (values.confirmPassword !== values.password) {
-    errors.confirmPassword = "Password tidak cocok.";
+    errors.confirmPassword = "Passwords do not match.";
   }
 
   return errors;

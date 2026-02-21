@@ -11,6 +11,7 @@ import Pagination from "@/components/shared/Pagination";
 import Button from "@/components/shared/Button";
 import { SkeletonBookGrid } from "@/components/shared/LoadingSpinner";
 import { EmptySearch, ErrorState } from "@/components/shared/StateViews";
+import { PAGINATION } from "@/constants"
 
 // ✅ Hapus import Redux cart, tambah server cart hooks
 import { useBooks, useBorrowBook, useCart, useAddToCart, useRemoveFromCart } from "@/hooks";
@@ -81,7 +82,7 @@ export default function BookListPage() {
             {/* Mobile filter button */}
             <div className="flex items-center justify-between md:hidden">
               <p className="text-sm font-medium text-neutral-500">
-                {pagination ? `${pagination.total} buku ditemukan` : ""}
+                {pagination ? `${pagination.total} book found` : ""}
               </p>
               <Button
                 variant="secondary"

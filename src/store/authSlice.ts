@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AuthUser } from "../types";
 import { STORAGE_KEYS } from "../constants";
+import type { RootState } from "./index"
 
 // ============================================================
 // Helper: load initial state from localStorage

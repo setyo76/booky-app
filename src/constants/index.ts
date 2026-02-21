@@ -16,7 +16,6 @@ export const ROUTES = {
   MY_LOANS: "/my-loans",
   MY_PROFILE: "/profile",
   CART: "/cart",
-  // Admin routes
   ADMIN: "/admin",
   ADMIN_BOOKS: "/admin/books",
   ADMIN_LOANS: "/admin/loans",
@@ -81,48 +80,48 @@ export const USER_ROLES = {
 // TOAST MESSAGES
 // ============================================================
 export const TOAST_MESSAGES = {
-  LOGIN_SUCCESS: "Selamat datang kembali! 👋",
-  LOGIN_ERROR: "Email atau password salah.",
-  REGISTER_SUCCESS: "Akun berhasil dibuat! Silakan login.",
-  REGISTER_ERROR: "Gagal membuat akun. Coba lagi.",
-  BORROW_SUCCESS: "Buku berhasil dipinjam! Selamat membaca 📚",
-  BORROW_ERROR: "Gagal meminjam buku. Stok mungkin habis.",
-  RETURN_SUCCESS: "Buku berhasil dikembalikan.",
-  RETURN_ERROR: "Gagal mengembalikan buku.",
-  REVIEW_SUCCESS: "Review berhasil ditambahkan! ⭐",
-  REVIEW_ERROR: "Gagal menambahkan review.",
-  REVIEW_DELETE_SUCCESS: "Review berhasil dihapus.",
-  PROFILE_UPDATE_SUCCESS: "Profil berhasil diperbarui.",
-  PROFILE_UPDATE_ERROR: "Gagal memperbarui profil.",
-  CART_ADDED: "Buku ditambahkan ke keranjang.",
-  CART_REMOVED: "Buku dihapus dari keranjang.",
-  CART_CHECKOUT_SUCCESS: "Checkout berhasil! Semua buku dipinjam.",
-  CART_CHECKOUT_ERROR: "Beberapa buku gagal dipinjam.",
-  UNAUTHORIZED: "Sesi habis. Silakan login kembali.",
-  NETWORK_ERROR: "Koneksi bermasalah. Periksa internet Anda.",
+  LOGIN_SUCCESS: "Welcome back! 👋",
+  LOGIN_ERROR: "Invalid email or password.",
+  REGISTER_SUCCESS: "Account created successfully! Please log in.",
+  REGISTER_ERROR: "Failed to create account. Please try again.",
+  BORROW_SUCCESS: "Book borrowed successfully! Happy reading 📚",
+  BORROW_ERROR: "Failed to borrow book. Stock may be unavailable.",
+  RETURN_SUCCESS: "Book returned successfully.",
+  RETURN_ERROR: "Failed to return book.",
+  REVIEW_SUCCESS: "Review submitted successfully! ⭐",
+  REVIEW_ERROR: "Failed to submit review.",
+  REVIEW_DELETE_SUCCESS: "Review deleted successfully.",
+  PROFILE_UPDATE_SUCCESS: "Profile updated successfully.",
+  PROFILE_UPDATE_ERROR: "Failed to update profile.",
+  CART_ADDED: "Book added to cart.",
+  CART_REMOVED: "Book removed from cart.",
+  CART_CHECKOUT_SUCCESS: "Checkout successful! All books borrowed.",
+  CART_CHECKOUT_ERROR: "Some books could not be borrowed.",
+  UNAUTHORIZED: "Session expired. Please log in again.",
+  NETWORK_ERROR: "Connection error. Please check your internet.",
 } as const;
 
 // ============================================================
 // RATING LABELS
 // ============================================================
 export const RATING_LABELS: Record<number, string> = {
-  1: "Buruk",
-  2: "Kurang",
-  3: "Cukup",
-  4: "Bagus",
-  5: "Luar Biasa",
+  1: "Poor",
+  2: "Fair",
+  3: "Good",
+  4: "Great",
+  5: "Excellent",
 };
 
 // ============================================================
 // FILTER OPTIONS
 // ============================================================
 export const SORT_OPTIONS = [
-  { label: "Rating Tertinggi", value: "rating" },
-  { label: "Paling Populer", value: "popular" },
+  { label: "Highest Rating", value: "rating" },
+  { label: "Most Popular", value: "popular" },
 ] as const;
 
 export const MIN_RATING_OPTIONS = [
-  { label: "Semua Rating", value: "" },
+  { label: "All Ratings", value: "" },
   { label: "⭐ 1+", value: "1" },
   { label: "⭐⭐ 2+", value: "2" },
   { label: "⭐⭐⭐ 3+", value: "3" },

@@ -55,7 +55,7 @@ export default function MobileFilterDrawer({
             Reset
           </Button>
           <Button className='flex-1' onClick={onClose}>
-            Terapkan
+            Apply
           </Button>
         </div>
       </div>

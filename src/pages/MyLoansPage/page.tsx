@@ -4,7 +4,6 @@ import { Search, X } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import LoanCard from "./components/LoanCard";
 import Button from "@/components/shared/Button";
-import { SkeletonCard } from "@/components/shared/LoadingSpinner";
 import { EmptyState, ErrorState } from "@/components/shared/StateViews";
 
 import { useMyLoans } from "@/hooks";

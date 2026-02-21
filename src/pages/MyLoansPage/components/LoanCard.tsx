@@ -83,13 +83,13 @@ export default function LoanCard({ loan }: LoanCardProps) {
   const displayStatus = isOverdue ? "OVERDUE" : loan.status;
   const duration = getDuration(borrowDate, dueDate);
 
-  // ✅ Tombol review hanya muncul untuk buku yang sudah dikembalikan
+  // ✅ The review button only appears for books that have been returned.
   const canReview = loan.status === "RETURNED";
 
   function handleSubmitReview(e: React.FormEvent) {
     e.preventDefault();
     if (!book || starValue === 0) {
-      toast.error("Pilih rating bintang terlebih dahulu.");
+      toast.error("Please select a star rating first.");
       return;
     }
     createReview(
@@ -164,7 +164,7 @@ export default function LoanCard({ loan }: LoanCardProps) {
           )}
           <Link to={book ? `/books/${book.id}` : "#"}>
             <h3 className="text-sm font-bold text-neutral-900 hover:text-primary transition-colors line-clamp-2">
-              {book?.title ?? "Judul tidak diketahui"}
+              {book?.title ?? "Title unknown"}
             </h3>
           </Link>
           <p className="text-xs font-medium text-neutral-400">
@@ -176,7 +176,7 @@ export default function LoanCard({ loan }: LoanCardProps) {
           </p>
         </div>
 
-        {/* ✅ Give Review button — desktop, hanya jika RETURNED */}
+        {/* ✅ Give Review button — desktop, only if RETURNED */}
         {canReview && (
           <div className="hidden md:block shrink-0">
             <Button
@@ -184,17 +184,17 @@ export default function LoanCard({ loan }: LoanCardProps) {
               onClick={() => setShowReviewForm((v) => !v)}
               className="whitespace-nowrap"
             >
-              {showReviewForm ? "Tutup" : "Give Review"}
+              {showReviewForm ? "Close" : "Give Review"}
             </Button>
           </div>
         )}
       </div>
 
-      {/* ✅ Give Review button — mobile, hanya jika RETURNED */}
+      {/* ✅ Give Review button — mobile, only if RETURNED */}
       {canReview && (
         <div className="md:hidden px-4 pb-4">
           <Button className="w-full" onClick={() => setShowReviewForm((v) => !v)}>
-            {showReviewForm ? "Tutup" : "Give Review"}
+            {showReviewForm ? "Close" : "Give Review"}
           </Button>
         </div>
       )}
@@ -210,11 +210,11 @@ export default function LoanCard({ loan }: LoanCardProps) {
             <label className="text-xs font-semibold text-neutral-600">Rating</label>
             <StarRatingInput value={starValue} onChange={setStarValue} size="sm" />
           </div>
-          <FormField label="Komentar (opsional)">
+          <FormField label="Comment (optional)">
             <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Ceritakan pengalamanmu membaca buku ini..."
+              placeholder="Share your reading experience..."
               rows={2}
             />
           </FormField>

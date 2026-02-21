@@ -128,7 +128,7 @@ export default function ProfilePage() {
                     )}
                   </div>
                   <span className="text-xs font-bold px-3 py-1 rounded-full bg-neutral-100 text-neutral-600 uppercase tracking-widest">
-                    {(profile as any).role ?? "USER"}
+                    {(profile as { role?: string }).role ?? 'USER'}
                   </span>
                 </div>
 
@@ -162,17 +162,17 @@ export default function ProfilePage() {
       <Modal isOpen={editOpen} onClose={() => setEditOpen(false)} title="Update Profile" size="sm">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <FormField label="Name">
-            <Input name="name" value={form.name ?? ""} onChange={handleChange} placeholder="Masukkan nama lengkap" />
+            <Input name="name" value={form.name ?? ""} onChange={handleChange} placeholder="Enter full name" />
           </FormField>
-          <FormField label="Nomor Handphone">
-            <Input name="phone" type="tel" value={form.phone ?? ""} onChange={handleChange} placeholder="Contoh: 081234567890" />
+          <FormField label="Phone Number">
+            <Input name="phone" type="tel" value={form.phone ?? ""} onChange={handleChange} placeholder="Example: 081234567890" />
           </FormField>
-          <FormField label="Bio (opsional)">
-            <Textarea name="bio" value={form.bio ?? ""} onChange={handleChange} placeholder="Ceritakan sedikit tentang dirimu..." rows={3} />
+          <FormField label="Bio (optional)">
+            <Textarea name="bio" value={form.bio ?? ""} onChange={handleChange} placeholder="Tell us a little about yourself..." rows={3} />
           </FormField>
           <div className="flex gap-3 pt-2">
-            <Button type="button" variant="secondary" className="flex-1" onClick={() => setEditOpen(false)}>Batal</Button>
-            <Button type="submit" className="flex-1" isLoading={isPending}>Simpan</Button>
+            <Button type="button" variant="secondary" className="flex-1" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button type="submit" className="flex-1" isLoading={isPending}>Save</Button>
           </div>
         </form>
       </Modal>

@@ -10,8 +10,6 @@ import { selectIsAuthenticated, selectUser, selectIsAdmin, logout } from "../../
 import { setSearchQuery } from "../../store/uiSlice";
 import { ROUTES } from "../../constants";
 import SearchAutocomplete from "../shared/SearchAutocomplete";
-
-// ✅ Ganti Redux selectCartCount dengan useCart hook (server-side)
 import { useCart } from "../../hooks";
 
 interface NavbarProps {

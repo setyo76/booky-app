@@ -91,7 +91,7 @@ export function usePopularAuthors() {
 export function useAuthors() {
   return useQuery({
     queryKey: [QUERY_KEYS.AUTHORS],
-    queryFn: otherApis.getAuthors,
+    queryFn: () => otherApis.getAuthors(),
   });
 }
 
@@ -183,7 +183,7 @@ export function useBorrowBook() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LOANS_MY] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.BOOKS] });
 
-      // ✅ Selalu fetch cart terbaru dari server, lalu hapus item yang cocok
+      // ✅ Always fetch the latest cart from the server, then delete the matching items.
       try {
         const freshCart = await cartApi.getCart();
         const cartItem = freshCart?.data?.items?.find(
@@ -193,9 +193,9 @@ export function useBorrowBook() {
           await cartApi.removeFromCart(cartItem.id);
         }
       } catch {
-        // Jika gagal, tetap lanjut
+        // If it fails, keep going — optimistically the item will be removed from the cart in the UI, and if not, the user can manually refresh or remove it later.
       } finally {
-        // Paksa invalidate + refetch agar badge angka langsung update
+        // Force invalidate + refetch so that the number badge updates immediately
         await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
         queryClient.refetchQueries({ queryKey: [QUERY_KEYS.CART] });
       }
@@ -349,7 +349,7 @@ export function useCart() {
   return useQuery({
     queryKey: [QUERY_KEYS.CART],
     queryFn: cartApi.getCart,
-    staleTime: 0, // ✅ Selalu fresh agar badge angka selalu akurat
+    staleTime: 0, // ✅ Always fresh so the number badge is always accurate
   });
 }
 
@@ -384,7 +384,7 @@ export function useRemoveFromCart() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CART] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error) || "Gagal menghapus dari keranjang.");
+      toast.error(getErrorMessage(error) || "Failed to remove from cart.");
     },
   });
 }

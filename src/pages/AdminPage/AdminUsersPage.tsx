@@ -108,7 +108,7 @@ export default function AdminUsersPage() {
                   {users.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="text-center py-10 text-neutral-400 font-medium">
-                        Tidak ada user ditemukan
+                        No users found
                       </td>
                     </tr>
                   ) : (
@@ -190,9 +190,9 @@ export default function AdminUsersPage() {
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={() => deleteId && doDelete(deleteId)}
-        title="Hapus user ini?"
-        description="Peringatan: Menghapus user akan menghapus seluruh riwayat peminjaman mereka secara permanen."
-        confirmLabel="Ya, Hapus User"
+        title="Delete this user?"
+        description="Warning: Deleting a user will permanently remove all their loan history."
+        confirmLabel="Yes, Delete User"
         variant="danger"
         isLoading={isDeleting}
       />

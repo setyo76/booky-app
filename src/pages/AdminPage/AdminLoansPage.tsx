@@ -13,12 +13,12 @@ import { getAdminLoans, returnLoan } from "@/api/adminApi";
 import { useDebounce } from "@/hooks";
 import { cn } from "@/lib/utils";
 
-type StatusFilter = "ALL" | "BORROWED" | "RETURNED";
+type StatusFilter = "ALL" | "BORROWED" | "RETURNED" | "overdue";
 const STATUS_PILLS: { label: string; value: StatusFilter }[] = [
   { label: "Semua", value: "ALL" },
   { label: "Aktif", value: "BORROWED" },
   { label: "Kembali", value: "RETURNED" },
-  { label: "Terlambat", value: "overdue" },
+  { label: "Terlambat", value: "OVERDUE" },
 ];
 
 function formatDate(d?: string) {
@@ -81,7 +81,7 @@ export default function AdminLoansPage() {
           <div>
             <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Loans Management</h1>
             <p className="text-sm text-neutral-500 font-medium mt-0.5">
-              {pagination?.total ?? 0} transaksi peminjaman ditemukan
+              {pagination?.total ?? 0} loan transaction discovered
             </p>
           </div>
           
@@ -106,7 +106,7 @@ export default function AdminLoansPage() {
         <AdminSearchBar 
           value={search} 
           onChange={(v) => { setSearch(v); setPage(1); }} 
-          placeholder="Cari nama user atau judul buku..." 
+          placeholder="Search user name or book title..." 
         />
 
         <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden shadow-sm">
@@ -138,7 +138,7 @@ export default function AdminLoansPage() {
                       <td colSpan={5} className="text-center py-20">
                          <div className="flex flex-col items-center gap-2 text-neutral-400">
                             <AlertCircle className="w-8 h-8 opacity-20" />
-                            <p className="font-medium">Tidak ada data peminjaman yang cocok</p>
+                            <p className="font-medium">No matching loan data found</p>
                          </div>
                       </td>
                     </tr>
@@ -217,6 +217,7 @@ export default function AdminLoansPage() {
         {pagination && pagination.totalPages > 1 && (
           <div className="mt-2">
             <Pagination 
+              total={pagination?.total ?? 0} limit={pagination?.limit ?? 15}
               currentPage={page} 
               totalPages={pagination.totalPages} 
               onPageChange={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
@@ -229,9 +230,9 @@ export default function AdminLoansPage() {
         isOpen={!!returnId} 
         onClose={() => setReturnId(null)} 
         onConfirm={() => returnId && doReturn(returnId)} 
-        title="Konfirmasi Pengembalian" 
-        description="Apakah Anda yakin buku ini sudah diterima kembali dengan kondisi baik? Stok buku akan bertambah otomatis." 
-        confirmLabel="Konfirmasi Selesai" 
+        title="Return Confirmation" 
+        description="Are you sure this book has been returned in good condition? The book stock will be automatically increased." 
+        confirmLabel="Confirm Return" 
         isLoading={isReturning} 
       />
     </AdminLayout>

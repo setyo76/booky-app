@@ -4,6 +4,7 @@ import { Search, Star, BookOpen } from "lucide-react";
 import dayjs from "dayjs";
 
 import { useMyReviews } from "@/hooks";
+import { Review } from "@/types";
 import Badge from "@/components/shared/Badge";
 import { EmptyState } from "@/components/shared/StateViews";
 
@@ -33,9 +34,10 @@ export default function ReviewsTab() {
   const [search, setSearch] = useState("");
 
   const { data, isLoading } = useMyReviews();
-  const reviews = data?.data?.reviews ?? [];
+  const reviews: Review[] = data?.data?.reviews ?? [];
 
-  const filtered = reviews.filter((r) =>
+  // ✅ Tambah tipe Review pada parameter r
+  const filtered = reviews.filter((r: Review) =>
     r.book?.title?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -84,11 +86,11 @@ export default function ReviewsTab() {
       {/* Empty */}
       {!isLoading && filtered.length === 0 && (
         <EmptyState
-          title="Belum ada review"
+          title="No reviews yet"
           description={
             search
-              ? `Tidak ada review untuk "${search}".`
-              : "Kamu belum memberikan review untuk buku apapun."
+              ? `There are no reviews for "${search}".`
+              : "You haven't given any reviews for any books yet."
           }
         />
       )}
@@ -96,7 +98,8 @@ export default function ReviewsTab() {
       {/* Review list */}
       {!isLoading && filtered.length > 0 && (
         <div className="flex flex-col gap-0">
-          {filtered.map((review) => {
+          {/* ✅ Tambah tipe Review pada parameter review */}
+          {filtered.map((review: Review) => {
             const book = review.book;
             return (
               <div
@@ -136,16 +139,16 @@ export default function ReviewsTab() {
 
                         {/* Book detail */}
                         <div className="flex flex-col gap-1 min-w-0">
-                          {(book as any).category && (
+                          {book.category && (
                             <Badge variant="default" className="w-fit text-[11px]">
-                              {(book as any).category.name}
+                              {book.category.name}
                             </Badge>
                           )}
                           <h3 className="text-sm font-bold text-neutral-900 group-hover:text-primary transition-colors line-clamp-2">
                             {book.title}
                           </h3>
                           <p className="text-xs text-neutral-400">
-                            {(book as any).author?.name ?? "Unknown Author"}
+                            {book.author?.name ?? "Unknown Author"}
                           </p>
                         </div>
                       </Link>

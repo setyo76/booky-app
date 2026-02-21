@@ -36,11 +36,11 @@ export function EmptySearch({ query }: { query?: string }) {
   return (
     <EmptyState
       icon={<SearchX className="w-8 h-8 text-neutral-400" />}
-      title="Tidak ada hasil"
+      title="No result"
       description={
         query
-          ? `Tidak ditemukan buku dengan kata kunci "${query}".`
-          : "Tidak ada buku yang sesuai filter."
+          ? `No book found with keyword "${query}".`
+          : "No books match the filter."
       }
     />
   );
@@ -58,13 +58,13 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
       <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
         <WifiOff className="w-8 h-8 text-accent-red" />
       </div>
-      <h3 className="text-base font-bold text-neutral-900 mb-1">Gagal memuat data</h3>
+      <h3 className="text-base font-bold text-neutral-900 mb-1">Failed to load data</h3>
       <p className="text-sm font-medium text-neutral-500 max-w-xs">
-        {message ?? "Terjadi kesalahan. Periksa koneksi internet kamu."}
+        {message ?? "An error occurred. Please check your internet connection."}
       </p>
       {onRetry && (
         <Button onClick={onRetry} variant="secondary" className="mt-5" size="sm">
-          Coba Lagi
+          Try Again
         </Button>
       )}
     </div>
@@ -78,9 +78,9 @@ export function UnauthorizedState() {
       <div className="w-16 h-16 rounded-full bg-yellow-50 flex items-center justify-center mb-4">
         <ShieldAlert className="w-8 h-8 text-yellow-500" />
       </div>
-      <h3 className="text-base font-bold text-neutral-900 mb-1">Akses Ditolak</h3>
+      <h3 className="text-base font-bold text-neutral-900 mb-1">Access Denied</h3>
       <p className="text-sm font-medium text-neutral-500 max-w-xs">
-        Kamu tidak memiliki akses ke halaman ini.
+        You do not have access to this page.
       </p>
     </div>
   );

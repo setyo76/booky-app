@@ -32,9 +32,9 @@ function validate(values: FormValues): FormErrors {
     errors.email = "Format email tidak valid.";
   }
   if (!values.password) {
-    errors.password = "Password wajib diisi.";
+    errors.password = "Password is required.";
   } else if (values.password.length < 6) {
-    errors.password = "Password minimal 6 karakter.";
+    errors.password = "Password must be at least 6 characters.";
   }
   return errors;
 }

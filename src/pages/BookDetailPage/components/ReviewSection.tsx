@@ -64,7 +64,7 @@ export default function ReviewSection({
   function handleSubmitReview(e: React.FormEvent) {
     e.preventDefault();
     if (starValue === 0) {
-      toast.error("Pilih rating bintang terlebih dahulu.");
+      toast.error("Choose the star rating first.");
       return;
     }
     createReview(
@@ -95,7 +95,7 @@ export default function ReviewSection({
           <div className="flex items-center gap-2">
             <StarRatingDisplay rating={rating} size="md" showCount={false} />
             <span className="text-sm font-medium text-neutral-500">
-              ({reviewCount} Ulasan)
+              ({reviewCount} Reviews)
             </span>
           </div>
         </div>
@@ -103,7 +103,7 @@ export default function ReviewSection({
         {/* ✅ Hanya tampil jika user punya loan RETURNED untuk buku ini */}
         {canReview && !showForm && (
           <Button variant="secondary" size="sm" onClick={() => setShowForm(true)}>
-            Tulis Review
+            Write Review
           </Button>
         )}
       </div>
@@ -111,7 +111,7 @@ export default function ReviewSection({
       {/* Info untuk user yang belum bisa review */}
       {isAuthenticated && !canReview && (
         <p className="text-xs text-neutral-400 font-medium italic">
-          Kamu hanya bisa menulis review untuk buku yang sudah dikembalikan.
+          You can only write a review for a book that has been returned.
         </p>
       )}
 
@@ -121,25 +121,25 @@ export default function ReviewSection({
           onSubmit={handleSubmitReview}
           className="flex flex-col gap-4 p-4 border border-neutral-200 rounded-xl bg-neutral-50"
         >
-          <h3 className="text-sm font-bold text-neutral-900">Tulis Review Kamu</h3>
+          <h3 className="text-sm font-bold text-neutral-900">Write Your Review</h3>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-neutral-700">Rating</label>
             <StarRatingInput value={starValue} onChange={setStarValue} />
           </div>
-          <FormField label="Komentar (opsional)">
+          <FormField label="Comment (optional)">
             <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Bagaimana pendapatmu tentang buku ini?"
+              placeholder="What do you think about this book?"
               rows={3}
             />
           </FormField>
           <div className="flex gap-2 justify-end">
             <Button type="button" variant="secondary" size="sm" onClick={() => setShowForm(false)}>
-              Batal
+              Cancel
             </Button>
             <Button type="submit" size="sm" isLoading={isSubmitting}>
-              Kirim Review
+              Submit Review
             </Button>
           </div>
         </form>
@@ -164,7 +164,7 @@ export default function ReviewSection({
         </div>
       ) : reviews.length === 0 ? (
         <p className="text-sm font-medium text-neutral-400 text-center py-8">
-          Belum ada review. Jadilah yang pertama!
+          No reviews yet. Be the first to review!
         </p>
       ) : (
         <>

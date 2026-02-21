@@ -28,7 +28,7 @@ export interface AuthResponse {
 }
 
 // ============================================================
-// AUTHOR TYPES — harus sebelum Book
+// AUTHOR TYPES
 // ============================================================
 export interface Author {
   id: number;
@@ -44,7 +44,7 @@ export interface CreateAuthorRequest {
 }
 
 // ============================================================
-// CATEGORY TYPES — harus sebelum Book
+// CATEGORY TYPES
 // ============================================================
 export interface Category {
   id: number;
@@ -52,7 +52,7 @@ export interface Category {
 }
 
 // ============================================================
-// REVIEW TYPES — harus sebelum Book
+// REVIEW TYPES
 // ============================================================
 export interface Review {
   id: number;
@@ -60,7 +60,7 @@ export interface Review {
   bookId: number;
   rating: number;
   comment?: string;
-  book?: Pick<Book, "id" | "title" | "coverImage">;
+  book?: Pick<Book, "id" | "title" | "coverImage" | "category" | "author">;
   user?: {
     id: number;
     name: string;
@@ -70,7 +70,7 @@ export interface Review {
 }
 
 // ============================================================
-// BOOK TYPES — setelah Author, Category, Review
+// BOOK TYPES
 // ============================================================
 export interface Book {
   id: number;
@@ -83,7 +83,11 @@ export interface Book {
   reviewCount?: number;
   totalCopies?: number;
   availableCopies?: number;
+  stock?: number;
   borrowCount?: number;
+  totalPages?: number;
+  authorId?: number;
+  categoryId?: number;
   author?: Author;
   authorName?: string;
   category?: Category;
@@ -182,11 +186,11 @@ export interface BorrowBookRequest {
 }
 
 // ============================================================
-// REVIEW RESPONSE TYPES
+// REVIEW REQUEST/RESPONSE TYPES
 // ============================================================
 export interface CreateReviewRequest {
   bookId: number;
-  rating: number;
+  star: number;    // ✅ 'star' sesuai API (bukan 'rating')
   comment?: string;
 }
 
@@ -220,6 +224,7 @@ export interface UserProfile {
   email: string;
   phone?: string;
   bio?: string;
+  profilePhoto?: string;
   role: "ADMIN" | "USER";
   stats?: {
     totalBorrowed: number;

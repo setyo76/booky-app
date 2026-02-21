@@ -18,7 +18,7 @@ export function StarRatingDisplay({
   showCount = true,
   className,
 }: StarRatingDisplayProps) {
-  // ✅ Fallback ke 0 jika rating undefined/null
+  // ✅ Fallback to 0 if rating is undefined/null
   const safeRating = rating ?? 0;
 
   const sizes = {

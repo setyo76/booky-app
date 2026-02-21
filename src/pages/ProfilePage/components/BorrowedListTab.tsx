@@ -110,11 +110,11 @@ export default function BorrowedListTab() {
 
       {!isLoading && !isError && filteredLoans.length === 0 && (
         <EmptyState
-          title="Belum ada peminjaman"
+          title="No loans yet"
           description={
             statusFilter === "ALL"
-              ? "Kamu belum meminjam buku apapun. Yuk mulai baca!"
-              : `Tidak ada buku dengan status ${statusFilter.toLowerCase()}.`
+              ? "You haven't borrowed any books yet. Let's start reading!"
+              : `There are no books with status ${statusFilter.toLowerCase()}.`
           }
         />
       )}

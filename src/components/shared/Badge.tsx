@@ -88,7 +88,7 @@ export function AvailabilityBadge({
   }
   return (
     <Badge variant="success" className={className}>
-      Tersedia {availableCopies}
+      Available {availableCopies}
       {totalCopies ? `/${totalCopies}` : ""}
     </Badge>
   );

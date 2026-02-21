@@ -12,7 +12,6 @@ import { SkeletonBookGrid } from "@/components/shared/LoadingSpinner";
 
 // ✅ Pakai server-side cart hooks, bukan Redux
 import { useCart, useRemoveFromCart } from "@/hooks";
-import { TOAST_MESSAGES } from "@/constants";
 
 // Server cart item type
 interface CartItemServer {
@@ -87,7 +86,7 @@ export default function CartPage() {
 
   function handleProceedToCheckout() {
     if (selectedCount === 0) {
-      toast.error("Pilih minimal 1 buku untuk dipinjam.");
+      toast.error("Select at least 1 book to borrow.");
       return;
     }
     navigate("/checkout");
@@ -112,9 +111,9 @@ export default function CartPage() {
         <div className="page-container py-10">
           <h1 className="text-2xl font-bold text-neutral-900 mb-8">My Cart</h1>
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <p className="text-sm text-neutral-500">Gagal memuat keranjang.</p>
+            <p className="text-sm text-neutral-500">Failed to load cart.</p>
             <Button variant="secondary" onClick={() => refetch()}>
-              Coba Lagi
+              Try Again
             </Button>
           </div>
         </div>
@@ -129,11 +128,11 @@ export default function CartPage() {
         <div className="page-container py-10">
           <h1 className="text-2xl font-bold text-neutral-900 mb-8">My Cart</h1>
           <EmptyState
-            title="Keranjang kosong"
-            description="Belum ada buku di keranjang. Yuk tambahkan buku yang ingin dipinjam!"
+            title="Cart is empty"
+            description="No books in cart yet. Let's add some books you want to borrow!"
           />
           <div className="flex justify-center mt-6">
-            <Button onClick={() => navigate("/books")}>Cari Buku</Button>
+            <Button onClick={() => navigate("/books")}>Find Books</Button>
           </div>
         </div>
       </MainLayout>
@@ -288,7 +287,7 @@ function CartItem({
         onClick={onRemove}
         disabled={isRemoving}
         className="shrink-0 p-2 text-neutral-300 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 disabled:opacity-40"
-        title="Hapus dari keranjang"
+        title="Remove from basket"
       >
         <Trash2 className="w-4 h-4" />
       </button>

@@ -24,7 +24,7 @@ export async function createReview(
 ): Promise<ApiResponse<{ review: Review }>> {
  const payload = {
   bookId: Number(data.bookId),
-  star: Number(data.star ?? (data as any).rating), 
+  star: Number(data.star),
   comment: data.comment || ""
 };
 

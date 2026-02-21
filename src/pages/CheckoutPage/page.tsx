@@ -43,7 +43,7 @@ export default function CheckoutPage() {
 
   const { mutate: borrowFromCart, isPending } = useBorrowFromCart();
 
-  // ✅ navigate di dalam useEffect, bukan langsung saat render
+  // ✅ navigate inside useEffect, not directly during render
   useEffect(() => {
     if (!isLoading && !isError && items.length === 0) {
       navigate("/cart");
@@ -52,7 +52,7 @@ export default function CheckoutPage() {
 
   function handleConfirm() {
     if (!agreeReturn || !agreePolicy) {
-      toast.error("Harap setujui kedua pernyataan sebelum melanjutkan.");
+      toast.error("Please agree to both statements before continuing.");
       return;
     }
 
@@ -72,7 +72,6 @@ export default function CheckoutPage() {
           });
         },
         onError: () => {
-          // error toast sudah ditangani di useBorrowFromCart hook
         },
       }
     );
@@ -93,9 +92,9 @@ export default function CheckoutPage() {
         {/* Error */}
         {isError && (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <p className="text-sm text-neutral-500">Gagal memuat data checkout.</p>
+            <p className="text-sm text-neutral-500">Failed to load checkout data.</p>
             <Button variant="secondary" onClick={() => navigate("/cart")}>
-              Kembali ke Cart
+              Back to Cart
             </Button>
           </div>
         )}

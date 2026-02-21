@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Search, X, BookOpen, Star, Loader2 } from "lucide-react";
@@ -13,7 +13,7 @@ interface SearchAutocompleteProps {
   placeholder?: string;
   className?: string;
   inputClassName?: string;
-  onNavigate?: () => void; // callback setelah navigate (misal tutup mobile search)
+  onNavigate?: () => void; // callback after navigating (e.g. closing mobile search)
 }
 
 // ── Debounce hook ─────────────────────────────────────────────
@@ -255,7 +255,8 @@ export default function SearchAutocomplete({
                 </li>
               ))}
 
-              {/* Divider + "Lihat semua hasil" */}
+              
+              {/* Divider + "See all results" */}
               <li className="border-t border-neutral-100">
                 <button
                   onMouseDown={(e) => e.preventDefault()}
@@ -268,7 +269,7 @@ export default function SearchAutocomplete({
                   )}
                 >
                   <Search className="w-4 h-4" />
-                  Lihat semua hasil untuk "{inputValue}"
+                  See all results for"{inputValue}"
                 </button>
               </li>
             </ul>

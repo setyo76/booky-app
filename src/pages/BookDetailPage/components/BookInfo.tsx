@@ -1,4 +1,3 @@
-import { Star } from 'lucide-react';
 import { Book } from '@/types';
 import { getBookCoverUrl } from '@/lib/utils';
 import Badge from '@/components/shared/Badge';
@@ -11,6 +10,7 @@ interface BookInfoProps {
   onAddToCart: () => void;
   isBorrowing: boolean;
   isInCart: boolean;
+  isCartLoading: boolean; // ✅ tambah prop ini
   isAuthenticated: boolean;
 }
 
@@ -20,6 +20,7 @@ export default function BookInfo({
   onAddToCart,
   isBorrowing,
   isInCart,
+  isCartLoading,
   isAuthenticated,
 }: BookInfoProps) {
   const available = (book.availableCopies ?? 0) > 0;
@@ -71,7 +72,7 @@ export default function BookInfo({
         <div className='flex flex-col gap-2'>
           <h2 className='text-base font-bold text-neutral-900'>Description</h2>
           <p className='text-sm font-medium text-neutral-600 leading-relaxed'>
-            {book.description ?? 'Tidak ada deskripsi tersedia.'}
+            {book.description ?? 'No description available.'}
           </p>
         </div>
 
@@ -81,10 +82,11 @@ export default function BookInfo({
             <Button
               variant='secondary'
               onClick={onAddToCart}
-              disabled={isInCart || !available}
+              isLoading={isCartLoading}
+              disabled={isInCart || !available || isCartLoading}
               className='flex-1 md:flex-none md:px-6'
             >
-              {isInCart ? 'Di Keranjang' : 'Add to Cart'}
+              {isInCart ? 'In Cart' : 'Add to Cart'}
             </Button>
             <Button
               onClick={onBorrow}
@@ -92,7 +94,7 @@ export default function BookInfo({
               disabled={!available}
               className='flex-1 md:flex-none md:px-6'
             >
-              {available ? 'Borrow Book' : 'Stok Habis'}
+              {available ? 'Borrow Book' : 'Out of Stock'}
             </Button>
           </div>
         )}
